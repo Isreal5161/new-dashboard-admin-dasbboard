@@ -35,7 +35,7 @@ class AdminDashboard {
                     status: 'verified',
                     listings: 24,
                     joinDate: '2024-01-15',
-                    avatar: 'https://via.placeholder.com/40'
+                    initials: 'SJ'
                 },
                 {
                     id: 2,
@@ -45,7 +45,7 @@ class AdminDashboard {
                     status: 'pending',
                     listings: 12,
                     joinDate: '2024-02-20',
-                    avatar: 'https://via.placeholder.com/40'
+                    initials: 'MC'
                 },
                 {
                     id: 3,
@@ -55,7 +55,7 @@ class AdminDashboard {
                     status: 'verified',
                     listings: 18,
                     joinDate: '2024-01-10',
-                    avatar: 'https://via.placeholder.com/40'
+                    initials: 'DW'
                 }
             ],
             clients: [
@@ -379,7 +379,7 @@ class AdminDashboard {
         leaderboardContainer.innerHTML = topAgents.map(agent => `
             <div class="leaderboard-item">
                 <div class="agent-info">
-                    <img src="${agent.avatar}" alt="${agent.name}">
+                    <div class="profile-avatar" data-name="${agent.name}">${agent.initials}</div>
                     <div>
                         <h4>${agent.name}</h4>
                         <p>${agent.status === 'verified' ? 'Verified Agent' : 'Pending Verification'}</p>
@@ -387,7 +387,7 @@ class AdminDashboard {
                 </div>
                 <div class="agent-stats">
                     <span class="listings">${agent.listings} Properties</span>
-                    <span class="revenue">XAF${(agent.listings * 15000).toLocaleString()}</span>
+                    <span class="revenue">₦${(agent.listings * 15000).toLocaleString()}</span>
                 </div>
             </div>
         `).join('');
@@ -401,7 +401,7 @@ class AdminDashboard {
             <tr>
                 <td>
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <img src="${agent.avatar}" alt="${agent.name}" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+                        <div class="profile-avatar" data-name="${agent.name}" style="width: 35px; height: 35px; font-size: 0.8rem;">${agent.initials}</div>
                         <div>
                             <strong>${agent.name}</strong>
                             <br><small style="color: var(--gray-500);">Agent ID: #${agent.id}</small>
@@ -485,7 +485,7 @@ class AdminDashboard {
                     </div>
                 </td>
                 <td>${property.agent}</td>
-                <td><strong>XAF${property.price.toLocaleString()}</strong></td>
+                <td><strong>₦${property.price.toLocaleString()}</strong></td>
                 <td>
                     <span class="status-badge ${property.status}">
                         ${property.status.charAt(0).toUpperCase() + property.status.slice(1)}
@@ -518,7 +518,7 @@ class AdminDashboard {
                     <h4>${property.title}</h4>
                     <p>A modern property in a prime location with excellent amenities and facilities.</p>
                     <div class="property-meta">
-                        <div class="property-price">XAF${property.price.toLocaleString()}/month</div>
+                        <div class="property-price">₦${property.price.toLocaleString()}/month</div>
                         <div class="property-agent">by ${property.agent}</div>
                     </div>
                     <div class="property-actions">
@@ -547,7 +547,7 @@ class AdminDashboard {
                 <td>${transaction.tenant}</td>
                 <td>${transaction.agent}</td>
                 <td>${transaction.property}</td>
-                <td><strong>XAF${transaction.amount.toLocaleString()}</strong></td>
+                <td><strong>₦${transaction.amount.toLocaleString()}</strong></td>
                 <td>${this.formatDate(transaction.date)}</td>
                 <td>
                     <span class="status-badge ${transaction.status}">
@@ -780,7 +780,8 @@ class AdminDashboard {
         // Implement global search functionality
         console.log('Searching for:', query);
     }
- // Mobile Menu Functions
+
+    // Mobile Menu Functions
     setupMobileMenu() {
         const hamburgerMenu = document.getElementById('hamburgerMenu');
         const sidebar = document.getElementById('sidebar');
@@ -847,17 +848,18 @@ class AdminDashboard {
             sidebar.classList.remove('mobile-open');
             mobileOverlay.classList.remove('active');
             document.body.style.overflow = ''; // Restore scrolling
-        } 
+        }
     }
+
     handleResize() {
         // Handle responsive behavior
         if (window.innerWidth <= 768) {
             // Mobile specific adjustments
-        }  else {
+        } else {
             // Close mobile menu when switching to desktop
             this.closeMobileMenu();
         }
-     }
+    }
 
     startRealTimeUpdates() {
         // Simulate real-time updates
@@ -936,6 +938,3 @@ document.addEventListener('keydown', function(e) {
         });
     }
 });
-
-
-
