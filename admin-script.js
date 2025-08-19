@@ -387,7 +387,7 @@ class AdminDashboard {
                 </div>
                 <div class="agent-stats">
                     <span class="listings">${agent.listings} Properties</span>
-                    <span class="revenue">₦${(agent.listings * 15000).toLocaleString()}</span>
+                    <span class="revenue">XAF ${(agent.listings * 15000).toLocaleString()}</span>
                 </div>
             </div>
         `).join('');
@@ -485,7 +485,7 @@ class AdminDashboard {
                     </div>
                 </td>
                 <td>${property.agent}</td>
-                <td><strong>₦${property.price.toLocaleString()}</strong></td>
+                <td><strong>XAF${property.price.toLocaleString()}</strong></td>
                 <td>
                     <span class="status-badge ${property.status}">
                         ${property.status.charAt(0).toUpperCase() + property.status.slice(1)}
@@ -518,7 +518,7 @@ class AdminDashboard {
                     <h4>${property.title}</h4>
                     <p>A modern property in a prime location with excellent amenities and facilities.</p>
                     <div class="property-meta">
-                        <div class="property-price">₦${property.price.toLocaleString()}/month</div>
+                        <div class="property-price">XAF${property.price.toLocaleString()}/month</div>
                         <div class="property-agent">by ${property.agent}</div>
                     </div>
                     <div class="property-actions">
@@ -547,7 +547,7 @@ class AdminDashboard {
                 <td>${transaction.tenant}</td>
                 <td>${transaction.agent}</td>
                 <td>${transaction.property}</td>
-                <td><strong>₦${transaction.amount.toLocaleString()}</strong></td>
+                <td><strong>XAF ${transaction.amount.toLocaleString()}</strong></td>
                 <td>${this.formatDate(transaction.date)}</td>
                 <td>
                     <span class="status-badge ${transaction.status}">
@@ -938,3 +938,4 @@ document.addEventListener('keydown', function(e) {
         });
     }
 });
+
