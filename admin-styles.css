@@ -1327,7 +1327,7 @@ body {
 }
 @media (max-width: 768px) {
     .navbar-logo {
-        height: 28px !important;
+        height: 75px !important;
         width: auto !important;
         max-width: 90px;
     }
@@ -1340,8 +1340,8 @@ body {
         flex-shrink: 1;
         overflow: hidden;
     }
-    .navbar-brand h2 {
-        font-size: 1rem;
+    .navbar-brand h1 {
+        font-size: 0.5rem;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1360,4 +1360,5 @@ body {
         display: none !important;
     }
 }
+
 
