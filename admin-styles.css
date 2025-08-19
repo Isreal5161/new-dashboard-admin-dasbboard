@@ -1399,6 +1399,19 @@ body {
         max-height: 150px;
     }
 }
+.login-header {
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    color: white;
+    padding: 3rem 2rem 2rem;
+    text-align: center;
+}
+
+.login-header {
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    color: white;
+    padding: 1.5rem 1rem 1rem; /* smaller top/bottom padding */
+    text-align: center;
+}
 
 
 
