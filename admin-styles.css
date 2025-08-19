@@ -527,6 +527,31 @@ body {
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
 }
+.charts-section {
+    grid-template-columns: 1fr 1fr; /* Two charts side by side, equal width */
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.chart-container {
+    max-width: 100%;
+    width: 100%;
+    height: 320px; /* or try 260px for a more compact chart */
+    min-width: 0;
+    padding: 1rem;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.chart-container canvas {
+    width: 100% !important;
+    height: 200px !important; /* Set a fixed height for the chart, adjust as needed */
+    max-height: 240px;
+    max-width: 100%;
+    display: block;
+}
 
 .chart-header {
     margin-bottom: 1rem;
@@ -1358,6 +1383,20 @@ body {
     }
     .navbar-search {
         display: none !important;
+    }
+}
+@media (max-width: 768px) {
+    .charts-section {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .chart-container {
+        height: 200px;
+        padding: 0.5rem;
+    }
+    .chart-container canvas {
+        height: 120px !important;
+        max-height: 150px;
     }
 }
 
