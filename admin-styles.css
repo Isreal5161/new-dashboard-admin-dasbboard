@@ -1340,12 +1340,12 @@ body {
         flex-shrink: 1;
         overflow: hidden;
     }
-    .navbar-brand h1 {
-        font-size: 0.5rem;
+    .navbar-brand h2 {
+        font-size: 1rem;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 50vw;
+        max-width: 20vw;
         margin: 0;
     }
     .navbar-left {
@@ -1360,5 +1360,6 @@ body {
         display: none !important;
     }
 }
+
 
 
