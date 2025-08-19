@@ -1325,4 +1325,39 @@ body {
     color: var(--primary-color);
     border: 1px solid rgba(59, 130, 246, 0.2);
 }
+@media (max-width: 768px) {
+    .navbar-logo {
+        height: 28px !important;
+        width: auto !important;
+        max-width: 90px;
+    }
+    .navbar-brand {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 0;
+        max-width: 70vw;
+        flex-shrink: 1;
+        overflow: hidden;
+    }
+    .navbar-brand h2 {
+        font-size: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 50vw;
+        margin: 0;
+    }
+    .navbar-left {
+        gap: 0.5rem;
+        min-width: 0;
+    }
+    .top-navbar {
+        flex-wrap: nowrap;
+        padding: 0 0.5rem;
+    }
+    .navbar-search {
+        display: none !important;
+    }
+}
 
