@@ -1441,141 +1441,133 @@
         </div>
 
         <!-- Add Listing Page -->
-        <div class="page" id="add-listing-page">
-            <div class="page-header">
-                <h1>Add Listing</h1>
+<form class="add-listing-form" 
+      action="https://your-backend.onrender.com/api/listings" 
+      method="POST" 
+      enctype="multipart/form-data">
+
+    <!-- Images -->
+    <div class="form-group">
+        <label for="property-images" class="form-label">Upload Property Images</label>
+        <input type="file" id="property-images" name="images" class="form-control" accept="image/*" multiple required>
+        <p class="form-subtitle">You can upload multiple images</p>
+    </div>
+
+    <!-- Property Type -->
+    <div class="form-group">
+        <label class="form-label">What kind of place do you want to list?</label>
+        <div class="property-type-options">
+            <div class="radio-option">
+                <input type="radio" id="entire-place" name="propertyType" value="entire-place" required>
+                <label for="entire-place" class="radio-label">Entire Place</label>
             </div>
-
-            <div class="add-listing-container">
-                <div class="form-section">
-                    <div class="form-header">
-                        <h3>Information</h3>
-                        <p class="form-subtitle">Fill all the mandatory fields</p>
-                    </div>
-
-                    <form class="add-listing-form">
-                         <div class="form-group">
-                     <label for="property-images" class="form-label">Upload Property Images</label>
-                        <input type="file" id="property-images" class="form-control" accept="image/*" multiple required>
-                        <p class="form-subtitle">You can upload multiple images</p>
-                        </div>
-                        <!-- Property Type Selection -->
-                        <div class="form-group">
-                            <label class="form-label">What kind of place do you want to list?</label>
-                            <div class="property-type-options">
-                                <div class="radio-option">
-                                    <input type="radio" id="entire-place" name="property-type" value="entire-place" required>
-                                    <label for="entire-place" class="radio-label">Entire Place</label>
-                                </div>
-                                <div class="radio-option">
-                                    <input type="radio" id="private-room" name="property-type" value="private-room" required>
-                                    <label for="private-room" class="radio-label">Private Room</label>
-                                </div>
-                                <div class="radio-option">
-                                    <input type="radio" id="shared-room" name="property-type" value="shared-room" required>
-                                    <label for="shared-room" class="radio-label">Shared Room</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Title -->
-                        <div class="form-group">
-                            <label for="property-title" class="form-label">Title</label>
-                            <input type="text" id="property-title" class="form-control" placeholder="Enter the Property name" required>
-                        </div>
-
-                        <!-- Description -->
-                        <div class="form-group">
-                            <label class="form-label">Enter your property Description</label>
-                            <div class="description-editor">
-                                <div class="editor-toolbar">
-                                    <button type="button" class="editor-btn" data-command="bold" title="Bold">
-                                        <i class="fas fa-bold"></i>
-                                    </button>
-                                    <button type="button" class="editor-btn" data-command="italic" title="Italic">
-                                        <i class="fas fa-italic"></i>
-                                    </button>
-                                    <button type="button" class="editor-btn" data-command="insertParagraph" title="Paragraph">
-                                        <i class="fas fa-paragraph"></i>
-                                    </button>
-                                </div>
-                                <div class="editor-content" contenteditable="true" data-placeholder="Enter your property description here..."></div>
-                                <textarea id="property-description" name="property-description" style="display: none;" required></textarea>
-                            </div>
-                        </div>
-
-                        <!-- Type of listing -->
-                        <div class="form-group">
-                            <label for="listing-type" class="form-label">Type of listing (e.g Single room, Studio)</label>
-                            <select id="listing-type" class="form-control" required>
-                                <option value="">Select listing type</option>
-                                <option value="studio">Studio</option>
-                                <option value="single-room">Single Room</option>
-                                <option value="full-apartment">Full Apartment</option>
-                                <option value="2-bedroom">2 Bedroom</option>
-                                <option value="3-bedroom">3 Bedroom</option>
-                                <option value="penthouse">Penthouse</option>
-                            </select>
-                        </div>
-
-                        <!-- Property Details Grid -->
-                        <div class="property-details-grid">
-                            <div class="form-group">
-                                <label for="bedrooms" class="form-label">Number of bedrooms</label>
-                                <input type="number" id="bedrooms" class="form-control" placeholder="Enter number of bedrooms" min="0" required>
-                            </div>
-
-                            <!-- Address -->
-                        <div class="form-group">
-                        <label for="property-address" class="form-label">Property Address</label>
-                        <input type="text" id="property-address" class="form-control" placeholder="Enter the property address" required>
-                        </div>
-                            <div class="form-group">
-                                <label for="beds" class="form-label">Number of beds</label>
-                                <input type="number" id="beds" class="form-control" placeholder="Enter number of beds" min="0" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="bathrooms" class="form-label">Number of bathrooms</label>
-                                <input type="number" id="bathrooms" class="form-control" placeholder="Enter number of bathrooms" min="0" step="0.5" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="rooms" class="form-label">Number of Room</label>
-                                <input type="number" id="rooms" class="form-control" placeholder="Enter number of rooms" min="1" required>
-                            </div>
-                            <!-- Price -->
-                            <div class="form-group">
-                            <label for="property-price" class="form-label">Price</label>
-                            <input type="number" id="property-price" class="form-control" placeholder="Enter the property price" min="0" required>
-                            </div>    
-                            <div class="form-group">
-                                <label for="size" class="form-label">Size</label>
-                                <input type="number" id="size" class="form-control" placeholder="Enter the size. Only numbers" min="0" required>
-                            </div>
-                        </div>
-
-                        <!-- Unit of measure -->
-                        <div class="form-group">
-                            <label for="unit-measure" class="form-label">Unit of measure</label>
-                            <input type="text" id="unit-measure" class="form-control" placeholder="Enter the unit of measure. Ex. SqFt" required>
-                        </div>
-
-                        <!-- Affiliate Booking Link -->
-                        <div class="form-group">
-                            <label for="affiliate-link" class="form-label">Affiliate Booking Link</label>
-                            <input type="url" id="affiliate-link" class="form-control" placeholder="Enter Affiliate Booking Link">
-                        </div>
-
-                        <!-- Form Actions -->
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-draft">Save as draft</button>
-                            <button type="submit" class="btn btn-save">Save</button>
-                        </div>
-                    </form>
-                </div>
+            <div class="radio-option">
+                <input type="radio" id="private-room" name="propertyType" value="private-room" required>
+                <label for="private-room" class="radio-label">Private Room</label>
+            </div>
+            <div class="radio-option">
+                <input type="radio" id="shared-room" name="propertyType" value="shared-room" required>
+                <label for="shared-room" class="radio-label">Shared Room</label>
             </div>
         </div>
+    </div>
+
+    <!-- Title -->
+    <div class="form-group">
+        <label for="property-title" class="form-label">Title</label>
+        <input type="text" id="property-title" name="title" class="form-control" placeholder="Enter the Property name" required>
+    </div>
+
+    <!-- Description -->
+    <div class="form-group">
+        <label class="form-label">Enter your property Description</label>
+        <div class="description-editor">
+            <div class="editor-toolbar">
+                <button type="button" class="editor-btn" data-command="bold" title="Bold">
+                    <i class="fas fa-bold"></i>
+                </button>
+                <button type="button" class="editor-btn" data-command="italic" title="Italic">
+                    <i class="fas fa-italic"></i>
+                </button>
+                <button type="button" class="editor-btn" data-command="insertParagraph" title="Paragraph">
+                    <i class="fas fa-paragraph"></i>
+                </button>
+            </div>
+            <div class="editor-content" contenteditable="true" data-placeholder="Enter your property description here..."></div>
+            <textarea id="property-description" name="description" style="display: none;" required></textarea>
+        </div>
+    </div>
+
+    <!-- Type of listing -->
+    <div class="form-group">
+        <label for="listing-type" class="form-label">Type of listing</label>
+        <select id="listing-type" name="listingType" class="form-control" required>
+            <option value="">Select listing type</option>
+            <option value="studio">Studio</option>
+            <option value="single-room">Single Room</option>
+            <option value="full-apartment">Full Apartment</option>
+            <option value="2-bedroom">2 Bedroom</option>
+            <option value="3-bedroom">3 Bedroom</option>
+            <option value="penthouse">Penthouse</option>
+        </select>
+    </div>
+
+    <!-- Property Details -->
+    <div class="property-details-grid">
+        <div class="form-group">
+            <label for="bedrooms" class="form-label">Number of bedrooms</label>
+            <input type="number" id="bedrooms" name="bedrooms" class="form-control" placeholder="Enter number of bedrooms" min="0" required>
+        </div>
+
+        <div class="form-group">
+            <label for="property-address" class="form-label">Property Address</label>
+            <input type="text" id="property-address" name="address" class="form-control" placeholder="Enter the property address" required>
+        </div>
+
+        <div class="form-group">
+            <label for="beds" class="form-label">Number of beds</label>
+            <input type="number" id="beds" name="beds" class="form-control" placeholder="Enter number of beds" min="0" required>
+        </div>
+
+        <div class="form-group">
+            <label for="bathrooms" class="form-label">Number of bathrooms</label>
+            <input type="number" id="bathrooms" name="bathrooms" class="form-control" placeholder="Enter number of bathrooms" min="0" step="0.5" required>
+        </div>
+
+        <div class="form-group">
+            <label for="rooms" class="form-label">Number of Room</label>
+            <input type="number" id="rooms" name="rooms" class="form-control" placeholder="Enter number of rooms" min="1" required>
+        </div>
+
+        <div class="form-group">
+            <label for="property-price" class="form-label">Price</label>
+            <input type="number" id="property-price" name="price" class="form-control" placeholder="Enter the property price" min="0" required>
+        </div>
+
+        <div class="form-group">
+            <label for="size" class="form-label">Size</label>
+            <input type="number" id="size" name="size" class="form-control" placeholder="Enter the size. Only numbers" min="0" required>
+        </div>
+    </div>
+
+    <!-- Unit of measure -->
+    <div class="form-group">
+        <label for="unit-measure" class="form-label">Unit of measure</label>
+        <input type="text" id="unit-measure" name="unitMeasure" class="form-control" placeholder="Enter the unit of measure. Ex. SqFt" required>
+    </div>
+
+    <!-- Affiliate Booking Link -->
+    <div class="form-group">
+        <label for="affiliate-link" class="form-label">Affiliate Booking Link</label>
+        <input type="url" id="affiliate-link" name="affiliateLink" class="form-control" placeholder="Enter Affiliate Booking Link">
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+        <button type="button" class="btn btn-draft">Save as draft</button>
+        <button type="submit" class="btn btn-save">Save</button>
+    </div>
+</form>
 
         <!-- Profile Status Page -->
         <div class="page" id="profile-status-page">
