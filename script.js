@@ -1868,3 +1868,8 @@ window.CribzConnect = {
     showContactInfo,
     openContactForm
 };
+document.querySelector(".add-listing-form").addEventListener("submit", function(e) {
+  const editorContent = document.querySelector(".editor-content").innerHTML.trim();
+  document.getElementById("property-description").value = editorContent;
+});
+
