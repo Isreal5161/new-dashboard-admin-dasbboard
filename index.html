@@ -1454,6 +1454,11 @@
                     </div>
 
                     <form class="add-listing-form">
+                         <div class="form-group">
+                     <label for="property-images" class="form-label">Upload Property Images</label>
+                        <input type="file" id="property-images" class="form-control" accept="image/*" multiple required>
+                        <p class="form-subtitle">You can upload multiple images</p>
+                        </div>
                         <!-- Property Type Selection -->
                         <div class="form-group">
                             <label class="form-label">What kind of place do you want to list?</label>
@@ -1520,11 +1525,11 @@
                                 <input type="number" id="bedrooms" class="form-control" placeholder="Enter number of bedrooms" min="0" required>
                             </div>
 
-                            <div class="form-group">
-                                <label for="guests" class="form-label">Number of guests</label>
-                                <input type="number" id="guests" class="form-control" placeholder="Enter number of guests" min="1" required>
-                            </div>
-
+                            <!-- Address -->
+                        <div class="form-group">
+                        <label for="property-address" class="form-label">Property Address</label>
+                        <input type="text" id="property-address" class="form-control" placeholder="Enter the property address" required>
+                        </div>
                             <div class="form-group">
                                 <label for="beds" class="form-label">Number of beds</label>
                                 <input type="number" id="beds" class="form-control" placeholder="Enter number of beds" min="0" required>
@@ -1539,7 +1544,11 @@
                                 <label for="rooms" class="form-label">Number of Room</label>
                                 <input type="number" id="rooms" class="form-control" placeholder="Enter number of rooms" min="1" required>
                             </div>
-
+                            <!-- Price -->
+                            <div class="form-group">
+                            <label for="property-price" class="form-label">Price</label>
+                            <input type="number" id="property-price" class="form-control" placeholder="Enter the property price" min="0" required>
+                            </div>    
                             <div class="form-group">
                                 <label for="size" class="form-label">Size</label>
                                 <input type="number" id="size" class="form-control" placeholder="Enter the size. Only numbers" min="0" required>
