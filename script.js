@@ -1607,7 +1607,7 @@ function setupAddListingPage() {
             }
 
             // Validate required fields
-            const requiredFields = ['property-type', 'property-title', 'listing-type', 'bedrooms', 'guests', 'beds', 'bathrooms', 'rooms', 'size', 'unit-measure'];
+            const requiredFields = ['property-type', 'property-title', 'listing-type', 'bedrooms', 'guests', 'beds', 'bathrooms', 'rooms', 'size', 'unit-measure','price', 'address', ];
             const missingFields = requiredFields.filter(field => !data[field] || data[field].trim() === '');
 
             if (missingFields.length > 0) {
