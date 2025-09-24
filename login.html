@@ -13,15 +13,20 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); /* Blue gradient to match logo */
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            flex-wrap: wrap; /* Allow content to wrap */
-        }
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Remove the gradient and add image */
+    background-image: url('city-landscape.jpg'); /* path to your image */
+    background-size: cover;        /* cover the whole page */
+    background-position: center;   /* center the image */
+    background-repeat: no-repeat;  /* don’t repeat */
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    flex-wrap: wrap;
+}
+
 
         .login-container {
             background: rgba(0, 123, 255, 0.95); /* Blue background to match logo */
@@ -448,9 +453,9 @@
     </style>
 </head>
 <body>
-    <a href="index.html" class="back-link">
+    <a href="https://cribzconnect.framer.wiki">
         <i class="fas fa-arrow-left"></i>
-        Back to Dashboard
+        Back to Home
     </a>
 
     <!-- City landscape image -->
