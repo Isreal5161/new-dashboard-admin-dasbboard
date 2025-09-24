@@ -1873,3 +1873,30 @@ document.querySelector(".add-listing-form").addEventListener("submit", function(
   document.getElementById("property-description").value = editorContent;
 });
 
+// Add listing form submission to backend
+document.addEventListener('DOMContentLoaded', function() {
+    const infoForm = document.querySelector('.info-form');
+    if (infoForm) {
+        infoForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(infoForm);
+            // If you have an image input, append it to formData here
+            // formData.append('images', imageInput.files[0]);
+
+            try {
+                const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/listings', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    alert('Listing submitted successfully!');
+                } else {
+                    alert('Failed to submit listing.');
+                }
+            } catch (error) {
+                alert('Error submitting listing: ' + error.message);
+            }
+        });
+    }
+});
+
