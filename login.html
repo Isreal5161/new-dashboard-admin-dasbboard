@@ -62,7 +62,7 @@
         }
 
         .login-header {
-            background: linear-gradient(135deg, #007bff, #0056b3);
+            background: linear-gradient(135deg, #ffffff, #ffffff);
             color: white;
             padding: 1rem;
             text-align: center;
@@ -70,21 +70,22 @@
         }
 
         .login-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 10px,
-                rgba(255,255,255,0.05) 10px,
-                rgba(255,255,255,0.05) 20px
-            );
-            animation: float 20s infinite linear;
-        }
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(0,0,0,0.02) 10px,   /* subtle light gray lines */
+        rgba(0,0,0,0.02) 20px
+    );
+    animation: float 20s infinite linear;
+}
+
 
         @keyframes float {
             0% { transform: translate(-50%, -50%) rotate(0deg); }
