@@ -211,16 +211,51 @@ function setupForms() {
     forms.forEach(form => {
         form.addEventListener('submit', (e) => {
             e.preventDefault();
-
-            // Get form data
             const formData = new FormData(form);
-            const data = Object.fromEntries(formData);
 
-            // Simulate API call
-            console.log('Form submitted:', data);
+            // Optional: If you have a rich text editor, update hidden textarea
+            const descriptionField = form.querySelector('[name="description"]');
+            const editorContent = form.querySelector('.editor-content');
+            if (descriptionField && editorContent) {
+                descriptionField.value = editorContent.innerHTML;
+                formData.set('description', descriptionField.value);
+            }
 
-            // Show success message
-            showNotification('Information saved successfully!', 'success');
+            // Show loading state on submit button if available
+            const submitBtn = form.querySelector('button[type="submit"]');
+            let originalText;
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            }
+
+            // Send data to backend using fetch
+            fetch('https://real-estate-backend-d9es.onrender.com/api/listings', {
+                method: 'POST',
+                body: formData
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(error || 'Failed to submit form');
+                }
+                return response.json();
+            })
+            .then(data => {
+                showNotification('Form submitted successfully!', 'success');
+                form.reset();
+                if (editorContent) editorContent.innerHTML = '';
+            })
+            .catch(error => {
+                showNotification('Error submitting form: ' + error.message, 'error');
+            })
+            .finally(() => {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText || 'Submit';
+                }
+            });
         });
     });
 }
