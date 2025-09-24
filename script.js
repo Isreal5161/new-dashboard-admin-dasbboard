@@ -213,6 +213,14 @@ function setupForms() {
             e.preventDefault();
             const formData = new FormData(form);
 
+            // Ensure images are appended with correct field name
+            const imageInput = form.querySelector('input[type="file"][name="images"]');
+            if (imageInput && imageInput.files.length > 0) {
+                for (const file of imageInput.files) {
+                    formData.append('images', file);
+                }
+            }
+
             // Optional: If you have a rich text editor, update hidden textarea
             const descriptionField = form.querySelector('[name="description"]');
             const editorContent = form.querySelector('.editor-content');
@@ -1629,6 +1637,14 @@ function setupAddListingPage() {
             // Prepare FormData
             const formData = new FormData(addListingForm);
 
+            // Ensure images are appended with correct field name
+            const imageInput = addListingForm.querySelector('input[type="file"][name="images"]');
+            if (imageInput && imageInput.files.length > 0) {
+                for (const file of imageInput.files) {
+                    formData.append('images', file);
+                }
+            }
+
             // Optionally, update hidden textarea value if using rich text editor
             if (editorContent && hiddenTextarea) {
                 hiddenTextarea.value = editorContent.innerHTML;
@@ -1884,35 +1900,4 @@ window.CribzConnect = {
     showContactInfo,
     openContactForm
 };
-document.querySelector(".add-listing-form").addEventListener("submit", function(e) {
-  const editorContent = document.querySelector(".editor-content").innerHTML.trim();
-  document.getElementById("property-description").value = editorContent;
-});
-
-// Add listing form submission to backend
-document.addEventListener('DOMContentLoaded', function() {
-    const infoForm = document.querySelector('.info-form');
-    if (infoForm) {
-        infoForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formData = new FormData(infoForm);
-            // If you have an image input, append it to formData here
-            // formData.append('images', imageInput.files[0]);
-
-            try {
-                const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/listings', {
-                    method: 'POST',
-                    body: formData
-                });
-                if (response.ok) {
-                    alert('Listing submitted successfully!');
-                } else {
-                    alert('Failed to submit listing.');
-                }
-            } catch (error) {
-                alert('Error submitting listing: ' + error.message);
-            }
-        });
-    }
-});
 
