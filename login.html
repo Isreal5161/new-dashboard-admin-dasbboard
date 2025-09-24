@@ -62,12 +62,18 @@
         }
 
         .login-header {
-            background: linear-gradient(135deg, #ffffff, #ffffff);
-            color: white;
-            padding: 1rem;
-            text-align: center;
-            position: relative;
-        }
+    background: linear-gradient(135deg, #ffffff, #ffffff);
+    color: white;
+    padding: 1rem;
+    position: relative;
+
+    /* New Flexbox centering */
+    display: flex;               /* enable flex layout */
+    flex-direction: column;      /* stack logo and any text vertically */
+    align-items: center;         /* horizontal center */
+    justify-content: center;     /* vertical center */
+    text-align: center;          /* keep text centered */
+}
 
         .login-header::before {
     content: '';
