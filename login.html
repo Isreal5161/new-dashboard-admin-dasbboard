@@ -426,29 +426,33 @@
             }
         }
 
-        /* Back to Dashboard Link */
+        /* Back to HOME Link */
         .back-link {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: white;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            z-index: 10;
-        }
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
 
-        .back-link:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateX(-2px);
-        }
+    /* New professional styling */
+    background-color: rgba(255, 255, 255, 0.15); /* semi-transparent white */
+    color: #ffffff; /* white text */
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.back-link:hover {
+    background-color: rgba(255, 255, 255, 0.25); /* slightly brighter on hover */
+    transform: translateY(-2px); /* subtle hover effect */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
 
         @media (max-width: 768px) {
             .back-link {
