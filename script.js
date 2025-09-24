@@ -1591,67 +1591,48 @@ function setupAddListingPage() {
     if (addListingForm) {
         addListingForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            
-            // Update hidden textarea before validation
+            // Prepare FormData
+            const formData = new FormData(addListingForm);
+
+            // Optionally, update hidden textarea value if using rich text editor
             if (editorContent && hiddenTextarea) {
                 hiddenTextarea.value = editorContent.innerHTML;
+                formData.set('description', hiddenTextarea.value);
             }
 
-            // Get form data
-            const formData = new FormData(addListingForm);
-            const data = Object.fromEntries(formData);
-            
-            // Add description from editor
-            if (editorContent) {
-                data['property-description'] = editorContent.innerHTML;
+            // Show loading state on save button
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                const originalText = saveBtn.innerHTML;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
             }
 
-            // Validate required fields
-           const requiredFields = ['propertyType','title', 'listingType', 'bedrooms', 'guests', 'beds', 'bathrooms', 'rooms', 'size', 'unitMeasure', 'price',  'address',  'description' ];
-           const missingFields = requiredFields.filter(field => !data[field] || data[field].trim() === '');
-
-            if (missingFields.length > 0) {
-                showNotification('Please fill in all mandatory fields', 'error');
-                return;
-            }
-
-            // Validate description
-            if (!editorContent || editorContent.textContent.trim() === '') {
-                showNotification('Please enter a property description', 'error');
-                return;
-            }
-
-            // Simulate saving
-            const submitBtn = e.target.querySelector('.btn-save');
-            const originalText = submitBtn.innerHTML;
-            
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-            
-            setTimeout(() => {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-                
-                // Save listing data (in real app, this would be sent to backend)
-                const listingData = {
-                    id: Date.now(),
-                    ...data,
-                    status: 'published',
-                    createdDate: new Date().toISOString()
-                };
-                
-                // Store listing (in real app, this would be handled by backend)
-                const existingListings = JSON.parse(localStorage.getItem('userListings') || '[]');
-                existingListings.unshift(listingData);
-                localStorage.setItem('userListings', JSON.stringify(existingListings));
-                
-                showNotification('Listing published successfully!', 'success');
-                
-                // Optionally navigate to listings page
-                setTimeout(() => {
-                    showPage('listings');
-                }, 1500);
-            }, 2000);
+            // Send data to backend using fetch
+            fetch('https://real-estate-backend-d9es.onrender.com/api/listings', {
+                method: 'POST',
+                body: formData
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(error || 'Failed to add listing');
+                }
+                return response.json();
+            })
+            .then(data => {
+                showNotification('Listing added successfully!', 'success');
+                addListingForm.reset();
+                if (editorContent) editorContent.innerHTML = '';
+            })
+            .catch(error => {
+                showNotification('Error adding listing: ' + error.message, 'error');
+            })
+            .finally(() => {
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = 'Save';
+                }
+            });
         });
     }
 
