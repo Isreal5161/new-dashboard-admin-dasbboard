@@ -427,32 +427,33 @@
         }
 
         /* Back to HOME Link */
-        .back-link {
+       .back-link {
     position: absolute;
     top: 20px;
     left: 20px;
-    text-decoration: none;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    font-weight: 500;
     padding: 0.5rem 1rem;
-    border-radius: 8px;
-
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #ffffff;               /* white text */
+    
     /* New professional styling */
-    background-color: rgba(255, 255, 255, 0.15); /* semi-transparent white */
-    color: #ffffff; /* white text */
-    backdrop-filter: blur(10px);
+    background-color: rgba(0, 0, 0, 0.5); /* semi-transparent black for contrast */
+    backdrop-filter: blur(5px);           /* subtle frosted effect */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     transition: all 0.3s ease;
     z-index: 10;
 }
 
 .back-link:hover {
-    background-color: rgba(255, 255, 255, 0.25); /* slightly brighter on hover */
-    transform: translateY(-2px); /* subtle hover effect */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    background-color: rgba(0, 0, 0, 0.7); /* darker on hover */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.4);
 }
-
 
         @media (max-width: 768px) {
             .back-link {
