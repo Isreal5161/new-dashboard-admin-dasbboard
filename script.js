@@ -1629,10 +1629,14 @@ function setupAddListingPage() {
         // Update button states based on selection
         editorContent.addEventListener('selectionchange', updateButtonStates);
         document.addEventListener('selectionchange', updateButtonStates);
+        
+        // Initialize textarea on page load
+        updateHiddenTextarea();
 
         function updateHiddenTextarea() {
-            if (hiddenTextarea) {
-                hiddenTextarea.value = editorContent.innerHTML;
+            if (hiddenTextarea && editorContent) {
+                hiddenTextarea.value = editorContent.innerHTML.trim();
+                console.log('Textarea updated:', hiddenTextarea.value); // Debug log
             }
         }
 
@@ -1671,6 +1675,28 @@ function setupAddListingPage() {
             
             console.log('Processing form submission'); // Debug log
             
+            // Update hidden textarea with editor content BEFORE creating FormData
+            if (editorContent && hiddenTextarea) {
+                hiddenTextarea.value = editorContent.innerHTML.trim();
+                console.log('Updated textarea with content:', hiddenTextarea.value); // Debug log
+            }
+            
+            // Validate description
+            if (editorContent && (!hiddenTextarea.value || hiddenTextarea.value.trim() === '')) {
+                showNotification('Please enter a property description', 'error');
+                return;
+            }
+            
+            // Check for other required fields
+            const requiredFields = currentForm.querySelectorAll('[required]');
+            for (let field of requiredFields) {
+                if (!field.checkValidity()) {
+                    field.focus();
+                    showNotification(`Please fill in the ${field.name || field.id || 'required'} field`, 'error');
+                    return;
+                }
+            }
+            
             // Prepare FormData
             const formData = new FormData(currentForm);
 
@@ -1682,10 +1708,9 @@ function setupAddListingPage() {
                 }
             }
 
-            // Optionally, update hidden textarea value if using rich text editor
-            if (editorContent && hiddenTextarea) {
-                hiddenTextarea.value = editorContent.innerHTML;
-                formData.set('description', hiddenTextarea.value);
+            // Log FormData contents for debugging
+            for (let [key, value] of formData.entries()) {
+                console.log(`FormData ${key}:`, value);
             }
 
             // Show loading state on save button
