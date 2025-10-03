@@ -795,10 +795,24 @@
 
                 <!-- Listings Content -->
                 <div class="listings-content">
-                    <div class="empty-state">
+                    <!-- Loading State -->
+                    <div class="loading-state" id="listings-loading" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading your listings...</p>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="empty-state" id="listings-empty" style="display: none;">
                         <i class="fas fa-home empty-icon"></i>
                         <p>You don't have any listing at this moment.</p>
-                        <small class="info-update">Update info</small>
+                        <small class="info-update">
+                            <a href="#add-listing" class="nav-link" data-page="add-listing">Add your first listing</a>
+                        </small>
+                    </div>
+
+                    <!-- Listings Grid -->
+                    <div class="my-listings-grid" id="my-listings-grid">
+                        <!-- Listings will be populated by JavaScript -->
                     </div>
                 </div>
             </div>

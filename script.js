@@ -1900,7 +1900,272 @@ function setupProfileStatusPage() {
 // Initialize Profile Status Page when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     setupProfileStatusPage();
+    setupMyListingsPage();
 });
+
+// Setup My Listings Page
+function setupMyListingsPage() {
+    loadMyListings();
+    
+    // Setup filter buttons
+    const filterButtons = document.querySelectorAll('.btn-filter');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Update active filter
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            // Filter listings
+            const filter = button.getAttribute('data-filter');
+            filterListings(filter);
+        });
+    });
+    
+    // Setup search functionality
+    const searchInput = document.querySelector('.search-input');
+    const searchBtn = document.querySelector('.search-btn');
+    
+    if (searchInput && searchBtn) {
+        searchBtn.addEventListener('click', () => {
+            const query = searchInput.value.trim();
+            searchListings(query);
+        });
+        
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = searchInput.value.trim();
+                searchListings(query);
+            }
+        });
+    }
+}
+
+// Load My Listings from API
+async function loadMyListings() {
+    const loadingState = document.getElementById('listings-loading');
+    const emptyState = document.getElementById('listings-empty');
+    const listingsGrid = document.getElementById('my-listings-grid');
+    
+    if (!listingsGrid) return;
+    
+    // Show loading state
+    if (loadingState) loadingState.style.display = 'block';
+    if (emptyState) emptyState.style.display = 'none';
+    listingsGrid.style.display = 'none';
+    
+    try {
+        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/listings');
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to load listings');
+        }
+        
+        const listings = data.data || data || [];
+        
+        // Hide loading state
+        if (loadingState) loadingState.style.display = 'none';
+        
+        if (listings.length === 0) {
+            // Show empty state
+            if (emptyState) emptyState.style.display = 'block';
+        } else {
+            // Display listings
+            displayMyListings(listings);
+            listingsGrid.style.display = 'grid';
+        }
+        
+    } catch (error) {
+        console.error('Error loading listings:', error);
+        if (loadingState) loadingState.style.display = 'none';
+        if (emptyState) {
+            emptyState.style.display = 'block';
+            emptyState.querySelector('p').textContent = 'Failed to load listings. Please try again.';
+        }
+        showNotification('Error loading listings: ' + error.message, 'error');
+    }
+}
+
+// Display listings in the grid
+function displayMyListings(listings) {
+    const listingsGrid = document.getElementById('my-listings-grid');
+    if (!listingsGrid) return;
+    
+    listingsGrid.innerHTML = '';
+    
+    listings.forEach(listing => {
+        const listingCard = createListingCard(listing);
+        listingsGrid.appendChild(listingCard);
+    });
+}
+
+// Create a listing card element
+function createListingCard(listing) {
+    const card = document.createElement('div');
+    card.className = 'listing-card';
+    card.setAttribute('data-listing-id', listing._id);
+    card.setAttribute('data-status', listing.status || 'published');
+    
+    const imageUrl = listing.images && listing.images[0] ? listing.images[0] : 'https://via.placeholder.com/320x200?text=No+Image';
+    const price = listing.price ? `$${listing.price.toLocaleString()}` : 'Price not set';
+    const status = listing.status || 'published';
+    
+    card.innerHTML = `
+        <div class="listing-card-image">
+            <img src="${imageUrl}" alt="${listing.title || 'Property Image'}" onerror="this.src='https://via.placeholder.com/320x200?text=No+Image'">
+            <div class="listing-status-badge status-${status}">
+                ${status.charAt(0).toUpperCase() + status.slice(1)}
+            </div>
+        </div>
+        <div class="listing-card-content">
+            <div class="listing-card-price">${price}</div>
+            <h3 class="listing-card-title">${listing.title || 'Untitled Property'}</h3>
+            <p class="listing-card-address">${listing.address || 'Address not specified'}</p>
+            <div class="listing-card-specs">
+                <div class="listing-spec">
+                    <i class="fas fa-bed"></i>
+                    <span>${listing.bedrooms || 0} bed</span>
+                </div>
+                <div class="listing-spec">
+                    <i class="fas fa-bath"></i>
+                    <span>${listing.bathrooms || 0} bath</span>
+                </div>
+                <div class="listing-spec">
+                    <i class="fas fa-ruler-combined"></i>
+                    <span>${listing.size || 0} ${listing.unitMeasure || 'sqft'}</span>
+                </div>
+            </div>
+            <div class="listing-card-actions">
+                <button class="btn-edit" onclick="editListing('${listing._id}')">
+                    <i class="fas fa-edit"></i>
+                    Edit
+                </button>
+                <button class="btn-delete" onclick="deleteListing('${listing._id}')">
+                    <i class="fas fa-trash"></i>
+                    Delete
+                </button>
+            </div>
+        </div>
+    `;
+    
+    return card;
+}
+
+// Delete listing function
+async function deleteListing(listingId) {
+    if (!listingId) {
+        showNotification('Invalid listing ID', 'error');
+        return;
+    }
+    
+    // Confirm deletion
+    const confirmed = confirm('Are you sure you want to delete this listing? This action cannot be undone.');
+    if (!confirmed) return;
+    
+    const deleteButton = document.querySelector(`[data-listing-id="${listingId}"] .btn-delete`);
+    
+    try {
+        // Disable button and show loading
+        if (deleteButton) {
+            deleteButton.disabled = true;
+            deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+        }
+        
+        const response = await fetch(`https://real-estate-backend-d9es.onrender.com/api/listings/${listingId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to delete listing');
+        }
+        
+        // Remove the listing card from DOM
+        const listingCard = document.querySelector(`[data-listing-id="${listingId}"]`);
+        if (listingCard) {
+            listingCard.style.transition = 'all 0.3s ease';
+            listingCard.style.transform = 'scale(0)';
+            listingCard.style.opacity = '0';
+            
+            setTimeout(() => {
+                listingCard.remove();
+                
+                // Check if any listings remain
+                const remainingListings = document.querySelectorAll('.listing-card');
+                if (remainingListings.length === 0) {
+                    const emptyState = document.getElementById('listings-empty');
+                    const listingsGrid = document.getElementById('my-listings-grid');
+                    if (emptyState) emptyState.style.display = 'block';
+                    if (listingsGrid) listingsGrid.style.display = 'none';
+                }
+            }, 300);
+        }
+        
+        showNotification('Listing deleted successfully!', 'success');
+        
+    } catch (error) {
+        console.error('Error deleting listing:', error);
+        showNotification('Error deleting listing: ' + error.message, 'error');
+        
+        // Re-enable button
+        if (deleteButton) {
+            deleteButton.disabled = false;
+            deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete';
+        }
+    }
+}
+
+// Edit listing function (placeholder)
+function editListing(listingId) {
+    showNotification('Edit functionality coming soon!', 'info');
+    // TODO: Implement edit functionality
+    // This could navigate to the add-listing page with pre-filled data
+}
+
+// Filter listings by status
+function filterListings(filter) {
+    const listingCards = document.querySelectorAll('.listing-card');
+    
+    listingCards.forEach(card => {
+        const status = card.getAttribute('data-status');
+        
+        if (filter === 'all' || status === filter) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// Search listings by title or address
+function searchListings(query) {
+    const listingCards = document.querySelectorAll('.listing-card');
+    
+    if (!query) {
+        // Show all listings if no query
+        listingCards.forEach(card => {
+            card.style.display = 'block';
+        });
+        return;
+    }
+    
+    const searchTerm = query.toLowerCase();
+    
+    listingCards.forEach(card => {
+        const title = card.querySelector('.listing-card-title').textContent.toLowerCase();
+        const address = card.querySelector('.listing-card-address').textContent.toLowerCase();
+        
+        if (title.includes(searchTerm) || address.includes(searchTerm)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
 
 // Export functions for potential module usage
 window.CribzConnect = {
