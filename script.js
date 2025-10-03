@@ -74,6 +74,21 @@ function showPage(pageId) {
 
     // Update URL hash
     window.location.hash = pageId;
+    
+    // Initialize specific pages
+    if (pageId === 'add-listing') {
+        console.log('Initializing add-listing page'); // Debug log
+        setTimeout(() => {
+            setupAddListingPage();
+        }, 100); // Small delay to ensure DOM is ready
+    }
+    
+    if (pageId === 'my-listings') {
+        console.log('Initializing my-listings page'); // Debug log
+        setTimeout(() => {
+            setupMyListingsPage();
+        }, 100); // Small delay to ensure DOM is ready
+    }
 }
 
 // Navigation Link Click Handlers
@@ -1581,6 +1596,10 @@ function setupAddListingPage() {
     const saveBtn = document.querySelector('.btn-save');
     const draftBtn = document.querySelector('.btn-draft');
 
+    console.log('Setting up add listing page'); // Debug log
+    console.log('Form found:', !!addListingForm); // Debug log
+    console.log('Save button found:', !!saveBtn); // Debug log
+
     // Rich text editor functionality
     if (editorContent && editorButtons.length > 0) {
         // Setup editor buttons
@@ -1635,23 +1654,28 @@ function setupAddListingPage() {
         // Remove any existing event listeners to prevent duplicates
         const newForm = addListingForm.cloneNode(true);
         addListingForm.parentNode.replaceChild(newForm, addListingForm);
-        addListingForm = newForm;
+        const currentForm = newForm;
         
-        addListingForm.addEventListener('submit', (e) => {
+        currentForm.addEventListener('submit', (e) => {
             e.preventDefault();
             e.stopPropagation();
             
+            console.log('Form submit triggered'); // Debug log
+            
             // Immediately disable button to prevent double clicks
-            const saveBtn = addListingForm.querySelector('.btn-save');
+            const saveBtn = currentForm.querySelector('.btn-save');
             if (saveBtn && saveBtn.disabled) {
+                console.log('Button already disabled, returning'); // Debug log
                 return; // Already processing
             }
             
+            console.log('Processing form submission'); // Debug log
+            
             // Prepare FormData
-            const formData = new FormData(addListingForm);
+            const formData = new FormData(currentForm);
 
             // Ensure images are appended with correct field name
-            const imageInput = addListingForm.querySelector('input[type="file"][name="images"]');
+            const imageInput = currentForm.querySelector('input[type="file"][name="images"]');
             if (imageInput && imageInput.files.length > 0) {
                 for (const file of imageInput.files) {
                     formData.append('images', file);
@@ -1669,7 +1693,10 @@ function setupAddListingPage() {
                 saveBtn.disabled = true;
                 const originalText = saveBtn.innerHTML;
                 saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                saveBtn.originalText = originalText; // Store original text
             }
+
+            console.log('Sending request to backend'); // Debug log
 
             // Send data to backend using fetch
             fetch('https://real-estate-backend-d9es.onrender.com/api/listings', {
@@ -1677,6 +1704,7 @@ function setupAddListingPage() {
                 body: formData
             })
             .then(async response => {
+                console.log('Response received:', response.status); // Debug log
                 if (!response.ok) {
                     const error = await response.text();
                     throw new Error(error || 'Failed to add listing');
@@ -1684,17 +1712,20 @@ function setupAddListingPage() {
                 return response.json();
             })
             .then(data => {
+                console.log('Listing added successfully:', data); // Debug log
                 showNotification('Listing added successfully!', 'success');
-                addListingForm.reset();
+                currentForm.reset();
                 if (editorContent) editorContent.innerHTML = '';
             })
             .catch(error => {
+                console.error('Error adding listing:', error); // Debug log
                 showNotification('Error adding listing: ' + error.message, 'error');
             })
             .finally(() => {
+                console.log('Restoring button state'); // Debug log
                 if (saveBtn) {
                     saveBtn.disabled = false;
-                    saveBtn.innerHTML = 'Save';
+                    saveBtn.innerHTML = saveBtn.originalText || 'Save';
                 }
             });
         });
