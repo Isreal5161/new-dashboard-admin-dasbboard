@@ -1598,7 +1598,10 @@ function setupAddListingPage() {
 
     console.log('Setting up add listing page'); // Debug log
     console.log('Form found:', !!addListingForm); // Debug log
+    console.log('Editor content found:', !!editorContent); // Debug log
+    console.log('Hidden textarea found:', !!hiddenTextarea); // Debug log
     console.log('Save button found:', !!saveBtn); // Debug log
+    console.log('Editor buttons found:', editorButtons.length); // Debug log
 
     // Rich text editor functionality
     if (editorContent && editorButtons.length > 0) {
@@ -1632,6 +1635,11 @@ function setupAddListingPage() {
         
         // Initialize textarea on page load
         updateHiddenTextarea();
+        
+        // Test editor functionality (remove this after testing)
+        if (editorContent && editorContent.textContent.trim() === '') {
+            console.log('Editor is empty, testing functionality'); // Debug log
+        }
 
         function updateHiddenTextarea() {
             if (hiddenTextarea && editorContent) {
@@ -1655,105 +1663,114 @@ function setupAddListingPage() {
 
     // Form submission
     if (addListingForm) {
-        // Remove any existing event listeners to prevent duplicates
-        const newForm = addListingForm.cloneNode(true);
-        addListingForm.parentNode.replaceChild(newForm, addListingForm);
-        const currentForm = newForm;
-        
-        currentForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
+        // Don't clone the form as it breaks editor functionality
+        // Instead, remove existing listeners by checking if already setup
+        if (!addListingForm.hasAttribute('data-setup')) {
+            addListingForm.setAttribute('data-setup', 'true');
             
-            console.log('Form submit triggered'); // Debug log
-            
-            // Immediately disable button to prevent double clicks
-            const saveBtn = currentForm.querySelector('.btn-save');
-            if (saveBtn && saveBtn.disabled) {
-                console.log('Button already disabled, returning'); // Debug log
-                return; // Already processing
-            }
-            
-            console.log('Processing form submission'); // Debug log
-            
-            // Update hidden textarea with editor content BEFORE creating FormData
-            if (editorContent && hiddenTextarea) {
-                hiddenTextarea.value = editorContent.innerHTML.trim();
-                console.log('Updated textarea with content:', hiddenTextarea.value); // Debug log
-            }
-            
-            // Validate description
-            if (editorContent && (!hiddenTextarea.value || hiddenTextarea.value.trim() === '')) {
-                showNotification('Please enter a property description', 'error');
-                return;
-            }
-            
-            // Check for other required fields
-            const requiredFields = currentForm.querySelectorAll('[required]');
-            for (let field of requiredFields) {
-                if (!field.checkValidity()) {
-                    field.focus();
-                    showNotification(`Please fill in the ${field.name || field.id || 'required'} field`, 'error');
+            addListingForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log('Form submit triggered'); // Debug log
+                
+                // Immediately disable button to prevent double clicks
+                const saveBtn = addListingForm.querySelector('.btn-save');
+                if (saveBtn && saveBtn.disabled) {
+                    console.log('Button already disabled, returning'); // Debug log
+                    return; // Already processing
+                }
+                
+                console.log('Processing form submission'); // Debug log
+                
+                // Update hidden textarea with editor content BEFORE creating FormData
+                if (editorContent && hiddenTextarea) {
+                    hiddenTextarea.value = editorContent.innerHTML.trim();
+                    console.log('Updated textarea with content:', hiddenTextarea.value); // Debug log
+                    console.log('Editor text content:', editorContent.textContent.trim()); // Debug log
+                }
+                
+                // Validate description - check for actual text content, not just HTML
+                const textContent = editorContent ? editorContent.textContent.trim() : '';
+                const htmlContent = hiddenTextarea ? hiddenTextarea.value.trim() : '';
+                
+                console.log('Text content length:', textContent.length); // Debug log
+                console.log('HTML content length:', htmlContent.length); // Debug log
+                
+                if (!textContent && !htmlContent) {
+                    showNotification('Please enter a property description', 'error');
+                    console.log('Validation failed: No description content'); // Debug log
                     return;
                 }
-            }
-            
-            // Prepare FormData
-            const formData = new FormData(currentForm);
-
-            // Ensure images are appended with correct field name
-            const imageInput = currentForm.querySelector('input[type="file"][name="images"]');
-            if (imageInput && imageInput.files.length > 0) {
-                for (const file of imageInput.files) {
-                    formData.append('images', file);
+                
+                // Check for other required fields
+                const requiredFields = addListingForm.querySelectorAll('[required]');
+                for (let field of requiredFields) {
+                    if (!field.checkValidity()) {
+                        field.focus();
+                        showNotification(`Please fill in the ${field.name || field.id || 'required'} field`, 'error');
+                        return;
+                    }
                 }
-            }
+                
+                // Prepare FormData
+                const formData = new FormData(addListingForm);
 
-            // Log FormData contents for debugging
-            for (let [key, value] of formData.entries()) {
-                console.log(`FormData ${key}:`, value);
-            }
-
-            // Show loading state on save button
-            if (saveBtn) {
-                saveBtn.disabled = true;
-                const originalText = saveBtn.innerHTML;
-                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-                saveBtn.originalText = originalText; // Store original text
-            }
-
-            console.log('Sending request to backend'); // Debug log
-
-            // Send data to backend using fetch
-            fetch('https://real-estate-backend-d9es.onrender.com/api/listings', {
-                method: 'POST',
-                body: formData
-            })
-            .then(async response => {
-                console.log('Response received:', response.status); // Debug log
-                if (!response.ok) {
-                    const error = await response.text();
-                    throw new Error(error || 'Failed to add listing');
+                // Ensure images are appended with correct field name
+                const imageInput = addListingForm.querySelector('input[type="file"][name="images"]');
+                if (imageInput && imageInput.files.length > 0) {
+                    for (const file of imageInput.files) {
+                        formData.append('images', file);
+                    }
                 }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Listing added successfully:', data); // Debug log
-                showNotification('Listing added successfully!', 'success');
-                currentForm.reset();
-                if (editorContent) editorContent.innerHTML = '';
-            })
-            .catch(error => {
-                console.error('Error adding listing:', error); // Debug log
-                showNotification('Error adding listing: ' + error.message, 'error');
-            })
-            .finally(() => {
-                console.log('Restoring button state'); // Debug log
+
+                // Log FormData contents for debugging
+                for (let [key, value] of formData.entries()) {
+                    console.log(`FormData ${key}:`, value);
+                }
+
+                // Show loading state on save button
                 if (saveBtn) {
-                    saveBtn.disabled = false;
-                    saveBtn.innerHTML = saveBtn.originalText || 'Save';
+                    saveBtn.disabled = true;
+                    const originalText = saveBtn.innerHTML;
+                    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                    saveBtn.originalText = originalText; // Store original text
                 }
+
+                console.log('Sending request to backend'); // Debug log
+
+                // Send data to backend using fetch
+                fetch('https://real-estate-backend-d9es.onrender.com/api/listings', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(async response => {
+                    console.log('Response received:', response.status); // Debug log
+                    if (!response.ok) {
+                        const error = await response.text();
+                        throw new Error(error || 'Failed to add listing');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Listing added successfully:', data); // Debug log
+                    showNotification('Listing added successfully!', 'success');
+                    addListingForm.reset();
+                    if (editorContent) editorContent.innerHTML = '';
+                })
+                .catch(error => {
+                    console.error('Error adding listing:', error); // Debug log
+                    showNotification('Error adding listing: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    console.log('Restoring button state'); // Debug log
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = saveBtn.originalText || 'Save';
+                    }
+                });
             });
-        });
+        }
     }
 
     // Save as draft functionality
