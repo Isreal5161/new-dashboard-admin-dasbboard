@@ -14,7 +14,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-image: url('city-landscape.jpg');
+            background-image: url('./city-landscape.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -22,7 +22,7 @@
             min-height: 100vh;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-end;
             padding: 20px;
             flex-wrap: wrap;
             position: relative;
@@ -35,7 +35,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.3);
             z-index: 1;
         }
 
@@ -49,7 +49,8 @@
             max-width: 400px;
             position: relative;
             z-index: 10;
-            margin: 0 auto;
+            margin-right: 40px;
+            margin-top: 20px;
         }
 
         .login-header {
@@ -396,17 +397,10 @@
         /* Responsive Design */
         @media (max-width: 768px) {
             body {
-                flex-direction: column;
+                justify-content: center;
+                padding: 10px;
             }
             .login-container {
-                position: relative;
-                top: auto;
-                right: auto;
-                max-width: 100%;
-                margin: 10px auto;
-            }
-            .image-container {
-                padding-right: 20px;
                 max-width: 100%;
                 margin: 10px auto;
             }
@@ -446,9 +440,9 @@
     </style>
 </head>
 <body>
-    <a href="index.html" class="back-link">
+    <a href="https://cribzconnect.framer.wiki" class="back-link">
         <i class="fas fa-arrow-left"></i>
-        Back to Dashboard
+        Back to Home
     </a>
 
     <div class="login-container">
