@@ -11,23 +11,43 @@ class AuthService {
     // Register new user
     async register(userData) {
         try {
-            const response = await fetch(`${this.apiBaseUrl}/api/users/register`, {
+            console.log('Registering user with data:', userData);
+            const response = await fetch(`${this.apiBaseUrl}/register`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
-                body: JSON.stringify(userData)
+                body: JSON.stringify({
+                    name: userData.fullName,
+                    email: userData.email,
+                    password: userData.password
+                })
             });
 
+            let data;
+            try {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    throw new Error('Server returned invalid response format');
+                }
+            } catch (parseError) {
+                console.error('Error parsing response:', parseError);
+                throw new Error('Unable to process server response. Please try again.');
+            }
+            
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Registration failed');
+                throw new Error(data.message || data.error || 'Registration failed. Please try again.');
             }
 
-            const data = await response.json();
             return data;
         } catch (error) {
             console.error('Registration error:', error);
+            if (error.name === 'TypeError' || error.message.includes('fetch')) {
+                throw new Error('Network error: Please check your connection and try again');
+            }
             throw error;
         }
     }
@@ -35,12 +55,17 @@ class AuthService {
     // Login user
     async login(credentials) {
         try {
-            const response = await fetch(`${this.apiBaseUrl}/api/users/login`, {
+            console.log('Logging in with credentials:', credentials);
+            const response = await fetch(`${this.apiBaseUrl}/login`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
-                body: JSON.stringify(credentials)
+                body: JSON.stringify({
+                    email: credentials.email,
+                    password: credentials.password
+                })
             });
 
             if (!response.ok) {

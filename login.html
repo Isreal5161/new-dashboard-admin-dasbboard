@@ -688,14 +688,29 @@
         document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            // Get form data
+            const form = e.target;
             const formData = {
-                fullName: e.target.querySelector('input[placeholder="Enter your full name"]').value,
-                email: e.target.querySelector('input[placeholder="Enter your email address"]').value,
-                username: e.target.querySelector('input[placeholder="Choose a username"]').value,
-                password: e.target.querySelector('input[placeholder="Create a strong password"]').value,
-                confirmPassword: e.target.querySelector('input[placeholder="Confirm your password"]').value,
-                marketingConsent: e.target.querySelector('#marketing-emails').checked
+                fullName: form.querySelector('input[placeholder="Enter your full name"]').value.trim(),
+                email: form.querySelector('input[placeholder="Enter your email address"]').value.trim(),
+                username: form.querySelector('input[placeholder="Choose a username"]').value.trim(),
+                password: form.querySelector('input[placeholder="Create a strong password"]').value,
+                confirmPassword: form.querySelector('input[placeholder="Confirm your password"]').value,
+                marketingConsent: form.querySelector('#marketing-emails').checked
             };
+
+            // Validate required fields
+            if (!formData.fullName || !formData.email || !formData.password) {
+                showMessage('Please fill in all required fields.', 'error');
+                return;
+            }
+
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(formData.email)) {
+                showMessage('Please enter a valid email address.', 'error');
+                return;
+            }
 
             // Password validation
             if (formData.password !== formData.confirmPassword) {
