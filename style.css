@@ -335,6 +335,7 @@ body {
     font-weight: 500;
     border-radius: 0 25px 25px 0;
     margin-right: 1rem;
+    background: transparent;
 }
 
 .nav-link:hover {
@@ -343,13 +344,13 @@ body {
     transform: translateX(5px);
 }
 
-.nav-link.active {
+.nav-link.active[data-active="true"] {
     background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: #fff;
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
 
-.nav-link.active:hover {
+.nav-link.active[data-active="true"]:hover {
     background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
     transform: translateX(5px);
 }

@@ -27,6 +27,27 @@ const overlay = document.getElementById('overlay');
 const navLinks = document.querySelectorAll('.nav-link');
 const pages = document.querySelectorAll('.page');
 const submenuToggles = document.querySelectorAll('.has-submenu');
+
+// Handle navigation active states
+function updateNavigation() {
+    const currentPath = window.location.hash || '#dashboard';
+    navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href === currentPath) {
+            link.classList.add('active');
+            link.setAttribute('data-active', 'true');
+        } else {
+            link.classList.remove('active');
+            link.removeAttribute('data-active');
+        }
+    });
+}
+
+// Initial navigation setup
+updateNavigation();
+
+// Listen for hash changes
+window.addEventListener('hashchange', updateNavigation);
 const notificationBadges = document.querySelectorAll('.notification-badge');
 
 // Global socket instance for notifications and real-time updates
