@@ -37,11 +37,24 @@ class AuthService {
         try {
             const response = await fetch(url, options);
             
-            // Check if response is ok (status in the range 200-299)
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            // Try to parse the response as JSON regardless of status
+            let data;
+            try {
+                data = await response.json();
+            } catch (e) {
+                console.error('Failed to parse response as JSON:', e);
             }
             
+            // Check if response is ok (status in the range 200-299)
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error(data?.message || 'Invalid email or password. Please check your credentials and try again.');
+                }
+                throw new Error(data?.message || `Server error: HTTP status ${response.status}`);
+            }
+            
+            // Set the parsed data on the response object for later use
+            response.parsedData = data;
             return response;
         } catch (error) {
             console.error(`Request failed (attempt ${retryCount + 1}):`, error);
@@ -57,7 +70,7 @@ class AuthService {
             // If we've exhausted all retries, throw a user-friendly error
             const errorMessage = error.message.includes('fetch') || error.name === 'TypeError'
                 ? 'Network error: Please check your internet connection and try again.'
-                : `Server error: ${error.message}. Please try again later.`;
+                : error.message;
             throw new Error(errorMessage);
         }
     }
@@ -132,22 +145,9 @@ class AuthService {
             });
 
             console.log('Response status:', response.status);
-            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+            console.log('Response data:', response.parsedData);
 
-            let data;
-            try {
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    data = await response.json();
-                    console.log('Response data:', data);
-                } else {
-                    console.error('Invalid content type:', contentType);
-                    throw new Error('Server returned invalid response format');
-                }
-            } catch (parseError) {
-                console.error('Error parsing response:', parseError);
-                throw new Error('Unable to process server response. Please try again.');
-            }
+            const data = response.parsedData;
 
             if (!response.ok) {
                 throw new Error(data.message || data.error || 'Login failed');
