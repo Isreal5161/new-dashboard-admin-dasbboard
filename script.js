@@ -2,6 +2,9 @@
  * INITIALIZATION AND GLOBAL VARIABLES
  *===============================================================*/
 
+// API Configuration
+const API_BASE_URL = 'https://real-estate-backend-d9es.onrender.com';
+
 // DOM Elements
 const menuToggle = document.getElementById('menuToggle');
 const sidebar = document.getElementById('sidebar');
@@ -18,15 +21,34 @@ const socketConnection = {
     
     // Initialize socket connection
     setupConnection() {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.warn('No auth token found for socket connection');
-            return;
-        }
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.warn('No auth token found for socket connection');
+                return;
+            }
 
-        if (this.socket) {
-            console.log('Socket connection already exists');
-            return;
+            if (this.socket) {
+                console.log('Socket connection already exists');
+                return;
+            }
+
+            // Connect to your backend URL
+            this.socket = io(API_BASE_URL, {
+                auth: {
+                    token: token
+                }
+            });
+
+            this.socket.on('connect', () => {
+                console.log('Socket connected successfully');
+            });
+
+            this.socket.on('connect_error', (error) => {
+                console.error('Socket connection error:', error);
+            });
+        } catch (error) {
+            console.error('Error setting up socket connection:', error);
         }
 
         this.socket = io('wss://real-estate-backend-d9es.onrender.com', {
@@ -285,7 +307,7 @@ async function refreshDashboard() {
 
 async function loadDashboardStats() {
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/listings/dashboard/stats');
+        const response = await fetch(`${API_BASE_URL}/api/listings/dashboard/stats`);
         const data = await response.json();
 
         // Update statistics
@@ -3139,7 +3161,12 @@ function setupSettingsPage() {
 
                 // Log settings for debugging
                 console.log('Settings saved:', settings);
-            }, 1500);
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showNotification('Failed to save settings', 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
         });
     }
 

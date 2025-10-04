@@ -4,9 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - CribzConnect</title>
+    <!-- Stylesheets -->
     <link href="style.css?v=6" rel="stylesheet" type="text/css" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Third-party Libraries -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <!-- API Configuration -->
+    <script>
+        const API_BASE_URL = 'https://real-estate-backend-d9es.onrender.com';
+        
+        // Global axios configuration
+        window.addEventListener('DOMContentLoaded', () => {
+            axios.defaults.baseURL = API_BASE_URL;
+            axios.defaults.headers.common['Content-Type'] = 'application/json';
+            
+            // Add token to requests if available
+            const token = localStorage.getItem('token');
+            if (token) {
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            }
+        });
+    </script>
 </head>
 <body>
     <!-- Mobile Header -->
@@ -1807,7 +1829,8 @@
     <!-- Notification Container -->
     <div id="notification-container" class="notification-container"></div>
 
-    <script src="script.js"></script>
+    <!-- Main Application Script -->
+    <script src="script.js?v=1"></script>
 
     <style>
         .notification-container {
