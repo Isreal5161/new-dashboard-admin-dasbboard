@@ -28,6 +28,29 @@ const navLinks = document.querySelectorAll('.nav-link');
 const pages = document.querySelectorAll('.page');
 const submenuToggles = document.querySelectorAll('.has-submenu');
 
+// Setup submenu toggles
+submenuToggles.forEach(toggle => {
+    toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        const submenu = toggle.nextElementSibling;
+        
+        // Close other submenus
+        submenuToggles.forEach(otherToggle => {
+            if (otherToggle !== toggle) {
+                const otherSubmenu = otherToggle.nextElementSibling;
+                if (otherSubmenu && otherSubmenu.classList.contains('active')) {
+                    otherSubmenu.classList.remove('active');
+                    otherToggle.classList.remove('active');
+                }
+            }
+        });
+        
+        // Toggle clicked submenu
+        submenu.classList.toggle('active');
+        toggle.classList.toggle('active');
+    });
+});
+
 // Handle navigation active states
 function updateNavigation() {
     const currentPath = window.location.hash || '#dashboard';
@@ -49,7 +72,34 @@ updateNavigation();
 // Initialize dashboard authentication
 document.addEventListener('DOMContentLoaded', () => {
     initializeDashboard();
+    updateUserProfile();
 });
+
+// Update user profile information
+function updateUserProfile() {
+    const authService = new AuthService();
+    const userData = authService.getUserData();
+    
+    if (userData) {
+        // Update mobile header
+        const mobileUserName = document.querySelector('.mobile-header .user-name');
+        const mobileUserInfo = document.querySelector('.mobile-header .user-info');
+        if (mobileUserName) mobileUserName.textContent = userData.fullName;
+        if (mobileUserInfo) {
+            const userName = mobileUserInfo.querySelector('.user-name');
+            const userEmail = mobileUserInfo.querySelector('.user-email');
+            if (userName) userName.textContent = userData.fullName;
+            if (userEmail) userEmail.textContent = userData.email;
+        }
+
+        // Update sidebar profile
+        const sidebarUserName = document.querySelector('.sidebar .user-name');
+        if (sidebarUserName) sidebarUserName.textContent = userData.fullName;
+    } else {
+        // Redirect to login if no user data
+        window.location.href = 'login.html';
+    }
+}
 
 // Listen for hash changes
 window.addEventListener('hashchange', updateNavigation);
