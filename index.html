@@ -13,22 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     
-    <!-- API Configuration -->
-    <script>
-        const API_BASE_URL = 'https://real-estate-backend-d9es.onrender.com';
-        
-        // Global axios configuration
-        window.addEventListener('DOMContentLoaded', () => {
-            axios.defaults.baseURL = API_BASE_URL;
-            axios.defaults.headers.common['Content-Type'] = 'application/json';
-            
-            // Add token to requests if available
-            const token = localStorage.getItem('token');
-            if (token) {
-                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            }
-        });
-    </script>
+    <!-- API Configuration will be handled in script.js -->
 </head>
 <body>
     <!-- Mobile Header -->

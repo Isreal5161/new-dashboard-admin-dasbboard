@@ -2,8 +2,22 @@
  * INITIALIZATION AND GLOBAL VARIABLES
  *===============================================================*/
 
-// API Configuration
-const API_BASE_URL = 'https://real-estate-backend-d9es.onrender.com';
+// Global Configuration
+window.APP_CONFIG = {
+    API_BASE_URL: 'https://real-estate-backend-d9es.onrender.com'
+};
+
+// Configure Axios defaults
+if (window.axios) {
+    axios.defaults.baseURL = window.APP_CONFIG.API_BASE_URL;
+    axios.defaults.headers.common['Content-Type'] = 'application/json';
+    
+    // Add token to requests if available
+    const token = localStorage.getItem('token');
+    if (token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+}
 
 // DOM Elements
 const menuToggle = document.getElementById('menuToggle');
@@ -34,7 +48,7 @@ const socketConnection = {
             }
 
             // Connect to your backend URL
-            this.socket = io(API_BASE_URL, {
+            this.socket = io(window.APP_CONFIG.API_BASE_URL, {
                 auth: {
                     token: token
                 }
