@@ -12,13 +12,20 @@ class AuthService {
     // Check if the server is available
     async checkServer() {
         try {
+            console.log('Checking server health at:', this.apiBaseUrl.replace('/api/auth', '/api/health'));
             const response = await fetch(this.apiBaseUrl.replace('/api/auth', '/api/health'), {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json'
                 }
             });
-            return response.ok;
+            if (!response.ok) {
+                console.error('Server health check failed with status:', response.status);
+                return false;
+            }
+            const data = await response.json();
+            console.log('Server health check response:', data);
+            return data.status === 'OK';
         } catch (error) {
             console.error('Server health check failed:', error);
             return false;
