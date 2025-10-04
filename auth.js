@@ -6,6 +6,53 @@ const USER_DATA_KEY = 'userData';
 class AuthService {
     constructor() {
         this.apiBaseUrl = 'https://real-estate-backend-d9es.onrender.com/api/auth';
+        this.maxRetries = 3; // Maximum number of retry attempts
+    }
+
+    // Check if the server is available
+    async checkServer() {
+        try {
+            const response = await fetch(this.apiBaseUrl.replace('/api/auth', '/api/health'), {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            return response.ok;
+        } catch (error) {
+            console.error('Server health check failed:', error);
+            return false;
+        }
+    }
+
+    // Helper method to handle API requests with retries
+    async makeRequest(url, options, retryCount = 0) {
+        try {
+            const response = await fetch(url, options);
+            
+            // Check if response is ok (status in the range 200-299)
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            return response;
+        } catch (error) {
+            console.error(`Request failed (attempt ${retryCount + 1}):`, error);
+            
+            if (retryCount < this.maxRetries) {
+                // Calculate exponential backoff delay (1s, 2s, 4s)
+                const delay = Math.pow(2, retryCount) * 1000;
+                console.log(`Retrying in ${delay/1000} seconds... (${retryCount + 1}/${this.maxRetries})`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                return this.makeRequest(url, options, retryCount + 1);
+            }
+            
+            // If we've exhausted all retries, throw a user-friendly error
+            const errorMessage = error.message.includes('fetch') || error.name === 'TypeError'
+                ? 'Network error: Please check your internet connection and try again.'
+                : `Server error: ${error.message}. Please try again later.`;
+            throw new Error(errorMessage);
+        }
     }
 
     // Register new user
@@ -55,9 +102,15 @@ class AuthService {
     // Login user
     async login(credentials) {
         try {
+            console.log('Checking server availability...');
+            const isServerAvailable = await this.checkServer();
+            if (!isServerAvailable) {
+                throw new Error('Server is currently unavailable. Please try again later.');
+            }
+
             console.log('Attempting login with:', { email: credentials.email });
             
-            const response = await fetch(`${this.apiBaseUrl}/login`, {
+            const response = await this.makeRequest(`${this.apiBaseUrl}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
