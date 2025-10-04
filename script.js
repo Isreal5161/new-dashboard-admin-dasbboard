@@ -470,7 +470,7 @@ async function refreshDashboard() {
 
 async function loadDashboardStats() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/listings/dashboard/stats`);
+        const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/listings/dashboard/stats`);
         const data = await response.json();
 
         // Update statistics

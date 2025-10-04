@@ -3,7 +3,7 @@
  *===============================================================*/
 
 // API Configuration
-const API_BASE_URL = 'https://real-estate-backend-d9es.onrender.com';
+// const API_BASE_URL = 'https://real-estate-backend-d9es.onrender.com';
 
 // DOM Elements
 const menuToggle = document.getElementById('menuToggle');
@@ -34,7 +34,7 @@ const socketConnection = {
             }
 
             // Connect to backend
-            this.socket = io(API_BASE_URL, {
+            this.socket = io(window.APP_CONFIG.API_BASE_URL, {
                 auth: {
                     token: token
                 }
