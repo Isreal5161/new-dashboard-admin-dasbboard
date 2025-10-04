@@ -1,6 +1,6 @@
 // Authentication Service
 
-const AUTH_TOKEN_KEY = 'userToken';
+const AUTH_TOKEN_KEY = 'token';
 const USER_DATA_KEY = 'userData';
 
 class AuthService {
