@@ -16,11 +16,13 @@ window.APP_CONFIG = {
 if (window.axios) {
     axios.defaults.baseURL = window.APP_CONFIG.API_BASE_URL;
     axios.defaults.headers.common['Content-Type'] = 'application/json';
-    
     // Add token to requests if available
     const token = localStorage.getItem('token');
     if (token) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+        // Redirect to login if not authenticated
+        window.location.href = 'login.html';
     }
 }
 
@@ -471,12 +473,24 @@ async function refreshDashboard() {
 async function loadDashboardStats() {
     try {
         const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/listings/dashboard/stats`);
-        const data = await response.json();
+        if (!response.ok) {
+            throw new Error('Failed to fetch dashboard stats');
+        }
+        let data = {};
+        try {
+            data = await response.json();
+        } catch (jsonError) {
+            showNotification('Dashboard stats response is not valid JSON', 'error');
+            return;
+        }
 
-        // Update statistics
-        document.querySelector('.stat-card:nth-child(1) h3').textContent = data.activeListings || 0;
-        document.querySelector('.stat-card:nth-child(2) h3').textContent = data.reservationCount || 0;
-        document.querySelector('.stat-card:nth-child(3) h3').textContent = `${data.totalEarnings || 0} XAF`;
+        // Update statistics with null checks
+        const stat1 = document.querySelector('.stat-card:nth-child(1) h3');
+        const stat2 = document.querySelector('.stat-card:nth-child(2) h3');
+        const stat3 = document.querySelector('.stat-card:nth-child(3) h3');
+        if (stat1) stat1.textContent = data.activeListings || 0;
+        if (stat2) stat2.textContent = data.reservationCount || 0;
+        if (stat3) stat3.textContent = `${data.totalEarnings || 0} XAF`;
 
         // Set up dashboard navigation buttons
         setupDashboardNavigation();
@@ -818,17 +832,30 @@ if (userToggle && dropdownMenu) {
 // Fetch user's balance
 async function fetchBalance() {
     try {
-        const response = await fetch(`${BACKEND_URL}/payouts/balance`, {
+        const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/payouts/balance`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         });
-
         if (!response.ok) {
-            throw new Error('Failed to fetch balance');
+            let errorMsg = 'Failed to fetch balance';
+            try {
+                const errorData = await response.json();
+                errorMsg = errorData.message || errorMsg;
+            } catch (jsonErr) {
+                // If not JSON, fallback to text
+                errorMsg = await response.text();
+            }
+            showNotification(errorMsg, 'error');
+            throw new Error(errorMsg);
         }
-
-        const data = await response.json();
+        let data;
+        try {
+            data = await response.json();
+        } catch (jsonErr) {
+            showNotification('Balance response is not valid JSON', 'error');
+            throw new Error('Invalid JSON response');
+        }
         updateBalanceDisplay(data);
         return data;
     } catch (error) {
@@ -867,7 +894,7 @@ function updateBalanceDisplay(balanceData) {
 // Save payout method
 async function savePayoutMethod(payoutData) {
     try {
-        const response = await fetch(`${BACKEND_URL}/payouts/payout-methods`, {
+        const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/payouts/payout-methods`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -875,17 +902,29 @@ async function savePayoutMethod(payoutData) {
             },
             body: JSON.stringify(payoutData)
         });
-
         if (!response.ok) {
-            throw new Error('Failed to save payout method');
+            let errorMsg = 'Failed to save payout method';
+            try {
+                const errorData = await response.json();
+                errorMsg = errorData.message || errorMsg;
+            } catch (jsonErr) {
+                errorMsg = await response.text();
+            }
+            showNotification(errorMsg, 'error');
+            throw new Error(errorMsg);
         }
-
-        const result = await response.json();
+        let result;
+        try {
+            result = await response.json();
+        } catch (jsonErr) {
+            showNotification('Payout method response is not valid JSON', 'error');
+            throw new Error('Invalid JSON response');
+        }
         showNotification('Payout method saved successfully', 'success');
         return result;
     } catch (error) {
         console.error('Error saving payout method:', error);
-        showNotification(error.message, 'error');
+        showNotification('Error saving payout method', 'error');
         throw error;
     }
 }
@@ -893,7 +932,7 @@ async function savePayoutMethod(payoutData) {
 // Request a payout
 async function requestPayout(amount, payoutMethodId) {
     try {
-        const response = await fetch(`${BACKEND_URL}/payouts/request`, {
+        const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/payouts/request`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -901,22 +940,30 @@ async function requestPayout(amount, payoutMethodId) {
             },
             body: JSON.stringify({ amount, payoutMethodId })
         });
-
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to request payout');
+            let errorMsg = 'Failed to request payout';
+            try {
+                const errorData = await response.json();
+                errorMsg = errorData.message || errorMsg;
+            } catch (jsonErr) {
+                errorMsg = await response.text();
+            }
+            showNotification(errorMsg, 'error');
+            throw new Error(errorMsg);
         }
-
-        const result = await response.json();
+        let result;
+        try {
+            result = await response.json();
+        } catch (jsonErr) {
+            showNotification('Payout request response is not valid JSON', 'error');
+            throw new Error('Invalid JSON response');
+        }
         showNotification('Payout request submitted successfully', 'success');
-        
-        // Refresh balance display
         await fetchBalance();
-        
         return result;
     } catch (error) {
         console.error('Error requesting payout:', error);
-        showNotification(error.message, 'error');
+        showNotification('Error requesting payout', 'error');
         throw error;
     }
 }
@@ -928,18 +975,29 @@ async function fetchTransactionHistory(page = 1, filters = {}) {
             page,
             ...filters
         });
-
-        const response = await fetch(`${BACKEND_URL}/payouts/transactions?${queryParams}`, {
+        const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/payouts/transactions?${queryParams}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         });
-
         if (!response.ok) {
-            throw new Error('Failed to fetch transaction history');
+            let errorMsg = 'Failed to fetch transaction history';
+            try {
+                const errorData = await response.json();
+                errorMsg = errorData.message || errorMsg;
+            } catch (jsonErr) {
+                errorMsg = await response.text();
+            }
+            showNotification(errorMsg, 'error');
+            throw new Error(errorMsg);
         }
-
-        const data = await response.json();
+        let data;
+        try {
+            data = await response.json();
+        } catch (jsonErr) {
+            showNotification('Transaction history response is not valid JSON', 'error');
+            throw new Error('Invalid JSON response');
+        }
         updateTransactionHistory(data);
         return data;
     } catch (error) {
@@ -964,24 +1022,21 @@ function updateTransactionHistory(data) {
         `;
         return;
     }
-
     const transactionsHTML = data.transactions.map(transaction => `
-        <div class="transaction-item ${transaction.type}">
+        <div class="transaction-item ${transaction.type} ${transaction.status}">
             <div class="transaction-info">
                 <span class="transaction-type">${formatTransactionType(transaction.type)}</span>
                 <span class="transaction-date">${formatDate(transaction.createdAt)}</span>
             </div>
             <div class="transaction-amount ${transaction.type === 'payout' ? 'negative' : 'positive'}">
-                ${transaction.type === 'payout' ? '-' : '+'} ${transaction.amount.toLocaleString()} XAF
+                ${transaction.type === 'payout' ? '-' : '+'} ${transaction.amount.toLocaleString()} ${transaction.currency}
             </div>
             <div class="transaction-status">
                 <span class="status-badge ${transaction.status}">${transaction.status}</span>
             </div>
         </div>
     `).join('');
-
     container.innerHTML = transactionsHTML;
-
     // Update pagination if needed
     if (data.pagination) {
         updatePagination(data.pagination);
@@ -1012,23 +1067,15 @@ function updatePagination(pagination) {
     let paginationHTML = '';
     
     if (totalPages > 1) {
-        paginationHTML = `
-            <button class="page-btn prev" ${currentPage === 1 ? 'disabled' : ''}>
-                <i class="fas fa-chevron-left"></i>
-            </button>
-        `;
-
+        paginationHTML = `<button class="page-btn prev"${currentPage === 1 ? ' disabled' : ''}>
+            <i class="fas fa-chevron-left"></i>
+        </button>`;
         for (let i = 1; i <= totalPages; i++) {
-            paginationHTML += `
-                <button class="page-btn number ${i === currentPage ? 'active' : ''}">${i}</button>
-            `;
+            paginationHTML += `<button class="page-btn number${i === currentPage ? ' active' : ''}">${i}</button>`;
         }
-
-        paginationHTML += `
-            <button class="page-btn next" ${currentPage === totalPages ? 'disabled' : ''}>
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        `;
+        paginationHTML += `<button class="page-btn next"${currentPage === totalPages ? ' disabled' : ''}>
+            <i class="fas fa-chevron-right"></i>
+        </button>`;
     }
 
     paginationContainer.innerHTML = paginationHTML;
@@ -1159,7 +1206,14 @@ function setupForms() {
                     const error = await response.text();
                     throw new Error(error || 'Failed to submit form');
                 }
-                return response.json();
+                let data;
+                try {
+                    data = await response.json();
+                } catch (jsonErr) {
+                    showNotification('Form response is not valid JSON', 'error');
+                    throw new Error('Invalid JSON response');
+                }
+                return data;
             })
             .then(data => {
                 showNotification('Form submitted successfully!', 'success');
@@ -1270,7 +1324,7 @@ async function uploadProfilePicture(file) {
         const formData = new FormData();
         formData.append('profilePicture', file);
 
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/profile/picture', {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/profile/picture`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1292,7 +1346,7 @@ async function uploadProfilePicture(file) {
 
 async function deleteProfilePicture() {
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/profile/picture', {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/profile/picture`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1358,7 +1412,7 @@ function handleResize() {
 // Security Settings Integration
 async function updatePassword(currentPassword, newPassword) {
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/profile/password', {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/profile/password`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -1385,7 +1439,7 @@ async function updatePassword(currentPassword, newPassword) {
 
 async function updateSecurityPreferences(preferences) {
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/profile/security', {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/profile/security`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -1410,7 +1464,7 @@ async function updateSecurityPreferences(preferences) {
 async function setup2FA() {
     try {
         // Request 2FA setup
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/profile/2fa/setup', {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/profile/2fa/setup`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1531,7 +1585,7 @@ async function uploadVerificationDocuments(files) {
             formData.append('documents', file);
         });
 
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/profile/verification/documents', {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/profile/verification/documents`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1552,7 +1606,7 @@ async function uploadVerificationDocuments(files) {
 
 async function checkVerificationStatus() {
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/profile/verification/status', {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/profile/verification/status`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -1610,7 +1664,7 @@ function setupVerificationPage() {
                         }
 
                         // Upload documents
-                        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/verification/submit', {
+                    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/verification/submit`, {
                             method: 'POST',
                             body: formData,
                             headers: {
@@ -1712,7 +1766,7 @@ function setupVerificationPage() {
 // Check verification status
 async function checkVerificationStatus() {
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/verification/status', {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/verification/status`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1999,7 +2053,7 @@ function updateTransactionHistory(data) {
 
 async function getPayoutMethods() {
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/profile/payout-methods', {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/profile/payout-methods`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -2019,7 +2073,7 @@ async function getPayoutMethods() {
 // Setup Payout Method Form
 async function savePayoutMethod(data) {
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/payout/methods', {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/payout/methods`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -2123,7 +2177,7 @@ function setupPayoutMethodForm() {
 // Request a payout
 async function requestPayout(amount) {
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/payout/request', {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/payout/request`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -2239,12 +2293,21 @@ function setupPayoutForm() {
 // Fetch payout history
 async function fetchPayoutHistory() {
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/payout/requests', {
+        const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/payout/requests`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         });
-        const data = await response.json();
+        if (!response.ok) {
+            throw new Error('Failed to fetch payout history');
+        }
+        let data = [];
+        try {
+            data = await response.json();
+        } catch (jsonError) {
+            showNotification('Payout history response is not valid JSON', 'error');
+            return;
+        }
         updatePayoutHistory(data);
     } catch (error) {
         console.error('Error fetching payout history:', error);
@@ -3667,7 +3730,7 @@ function setupAddListingPage() {
                 console.log('Sending request to backend'); // Debug log
 
                 // Send data to backend using fetch
-                fetch('https://real-estate-backend-d9es.onrender.com/api/listings', {
+                fetch(`${window.APP_CONFIG.API_BASE_URL}/api/listings`, {
                     method: 'POST',
                     body: formData
                 })
