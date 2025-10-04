@@ -5,7 +5,7 @@ const USER_DATA_KEY = 'userData';
 
 class AuthService {
     constructor() {
-        this.apiBaseUrl = 'https://real-estate-backend-d9es.onrender.com';
+        this.apiBaseUrl = 'https://real-estate-backend-d9es.onrender.com/api/auth';
     }
 
     // Register new user
@@ -19,7 +19,7 @@ class AuthService {
                     'Accept': 'application/json'
                 },
                 body: JSON.stringify({
-                    name: userData.fullName,
+                    fullName: userData.fullName,
                     email: userData.email,
                     password: userData.password
                 })
@@ -60,7 +60,8 @@ class AuthService {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
                 },
                 body: JSON.stringify({
                     email: credentials.email,
