@@ -6,6 +6,7 @@
     <title>Dashboard - CribzConnect</title>
     <link href="style.css?v=6" rel="stylesheet" type="text/css" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
     <!-- Mobile Header -->
@@ -489,17 +490,45 @@
                         </div>
                     </div>
 
+                    <div class="verification-status pending">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <h4>Verification Status</h4>
+                            <p>Loading status...</p>
+                        </div>
+                    </div>
+
                     <div class="verification-item">
                         <h4>Identity Verification</h4>
                         <div class="id-upload">
                             <div class="upload-area">
                                 <i class="fas fa-id-card"></i>
-                                <p>Upload your ID</p>
-                                <p class="upload-note">Please upload a clear photo of your government-issued ID</p>
-                                <button class="btn btn-secondary">Upload Pictures</button>
+                                <p>Upload Required Documents</p>
+                                <div class="document-type-select">
+                                    <select id="document-type" class="form-control" required>
+                                        <option value="">Select document type</option>
+                                        <option value="ID">Government-issued ID</option>
+                                        <option value="proofOfAddress">Proof of Address</option>
+                                        <option value="businessDoc">Business Document</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <p class="upload-note">Please upload clear photos/scans of your documents</p>
+                                <div class="upload-preview" id="upload-preview"></div>
+                                <button class="btn btn-secondary">Upload Documents</button>
                             </div>
-                            <button class="btn btn-primary verify-btn">Verify ID</button>
+                            <div class="verification-actions">
+                                <button class="btn btn-primary verify-btn">Submit for Verification</button>
+                                <button class="btn btn-outline-primary resubmit-btn" style="display: none;">
+                                    <i class="fas fa-redo"></i> Resubmit Documents
+                                </button>
+                            </div>
                         </div>
+                    </div>
+
+                    <div class="rejection-reason alert alert-danger" style="display: none;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p></p>
                     </div>
                 </div>
             </div>
@@ -825,19 +854,85 @@
             </div>
 
             <div class="bookings-container">
-                <!-- Reservations Section -->
-                <div class="reservations-section">
-                    <div class="bookings-header">
-                        <h2 class="manage-header">Manage</h2>
-                        <h2 class="reservations-header">Reservations</h2>
+                <!-- New Booking Notifications -->
+                <div class="booking-notifications" id="booking-notifications">
+                    <div class="notification-header">
+                        <h3><i class="fas fa-bell"></i> New Booking Notifications</h3>
+                    </div>
+                    <div class="notifications-list" id="notifications-list">
+                        <!-- Notifications will be populated here -->
+                        <div class="empty-notifications" id="empty-notifications">
+                            <i class="fas fa-bell-slash"></i>
+                            <p>No new booking notifications</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bookings Statistics -->
+                <div class="bookings-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="new-bookings">0</h3>
+                            <p>New Bookings</p>
+                        </div>
                     </div>
 
-                    <!-- Bookings Content -->
-                    <div class="bookings-content">
-                        <div class="empty-state">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="active-bookings">0</h3>
+                            <p>Active Bookings</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="completed-bookings">0</h3>
+                            <p>Completed Bookings</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bookings List -->
+                <div class="bookings-content">
+                    <div class="bookings-filters">
+                        <div class="search-input-group">
+                            <input type="text" class="form-control search-input" placeholder="Search bookings...">
+                            <button class="btn btn-primary search-btn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <div class="filter-buttons">
+                            <button class="btn btn-filter active" data-filter="all">All</button>
+                            <button class="btn btn-filter" data-filter="active">Active</button>
+                            <button class="btn btn-filter" data-filter="completed">Completed</button>
+                        </div>
+                    </div>
+
+                    <div class="bookings-list">
+                        <!-- Loading State -->
+                        <div class="loading-state" id="bookings-loading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading bookings...</p>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div class="empty-state" id="bookings-empty" style="display: none;">
                             <i class="fas fa-calendar-check empty-icon"></i>
-                            <p>You don't have any reservation at this moment.</p>
-                            <small class="info-update">Update info</small>
+                            <p>No bookings found</p>
+                        </div>
+
+                        <!-- Bookings Grid -->
+                        <div class="bookings-grid" id="bookings-grid">
+                            <!-- Bookings will be populated by JavaScript -->
                         </div>
                     </div>
                 </div>
@@ -1709,6 +1804,95 @@
     <!-- Overlay for mobile -->
     <div class="overlay" id="overlay"></div>
 
+    <!-- Notification Container -->
+    <div id="notification-container" class="notification-container"></div>
+
     <script src="script.js"></script>
+
+    <style>
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .notification {
+            position: relative;
+            background: white;
+            border-left: 4px solid #2196F3;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 10px;
+            min-width: 300px;
+            max-width: 400px;
+            animation: slideIn 0.3s ease-out;
+            transition: transform 0.3s ease-out;
+        }
+
+        .notification:hover {
+            transform: translateX(-5px);
+        }
+
+        .notification.success {
+            border-left-color: #4CAF50;
+        }
+
+        .notification h4 {
+            margin: 0 0 8px;
+            color: #333;
+        }
+
+        .notification p {
+            margin: 0;
+            color: #666;
+        }
+
+        .notification .close-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            padding: 4px 8px;
+            font-size: 12px;
+            display: none;
+        }
+    </style>
 </body>
 </html>
