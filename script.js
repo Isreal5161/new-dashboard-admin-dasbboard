@@ -5147,6 +5147,13 @@ window.CribzConnect = {
     showContactInfo,
     openContactForm,
     updateBookingStatus,
-    initializeBookingNotifications
+    initializeBookingNotifications: function() {
+        // Placeholder to prevent ReferenceError
+        console.log('initializeBookingNotifications called (placeholder)');
+    },
+    loadWalletPage: function() {
+        // Placeholder to prevent ReferenceError
+        console.log('loadWalletPage called (placeholder)');
+    }
 };
 
