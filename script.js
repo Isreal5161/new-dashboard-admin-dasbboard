@@ -31,30 +31,33 @@ const submenuToggles = document.querySelectorAll('.has-submenu');
 // Setup submenu toggles
 document.querySelectorAll('.has-submenu').forEach(menuItem => {
     const link = menuItem.querySelector('.nav-link');
-    
+    const arrow = menuItem.querySelector('.submenu-toggle');
     if (link) {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             const submenu = menuItem.querySelector('.submenu');
-            
+
             // Close other submenus
             document.querySelectorAll('.has-submenu').forEach(otherItem => {
                 if (otherItem !== menuItem) {
                     const otherSubmenu = otherItem.querySelector('.submenu');
+                    const otherArrow = otherItem.querySelector('.submenu-toggle');
                     if (otherSubmenu && otherSubmenu.classList.contains('active')) {
                         otherSubmenu.classList.remove('active');
                         const otherLink = otherItem.querySelector('.nav-link');
                         if (otherLink) otherLink.classList.remove('active');
+                        if (otherArrow) otherArrow.classList.remove('rotated');
                     }
                 }
             });
-            
+
             // Toggle current submenu
             if (submenu) {
                 submenu.classList.toggle('active');
                 link.classList.toggle('active');
+                if (arrow) arrow.classList.toggle('rotated');
             }
-            
+
             // Set the current page if it's a submenu item
             const pageId = link.getAttribute('data-page');
             if (pageId) {
