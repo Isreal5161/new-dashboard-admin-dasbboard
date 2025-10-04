@@ -1,6 +1,11 @@
 /*===============================================================
  * INITIALIZATION AND GLOBAL VARIABLES
  *===============================================================*/
+// Global definition to prevent ReferenceError
+function loadWalletPage() {
+    // TODO: Implement wallet page logic
+    console.log('loadWalletPage called (global placeholder)');
+}
 
 // Global Configuration
 window.APP_CONFIG = {
