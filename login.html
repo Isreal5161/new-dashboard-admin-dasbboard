@@ -661,13 +661,31 @@
                 button.classList.add('loading');
                 button.innerHTML = 'Signing in...';
 
+                const emailInput = e.target.querySelector('input[placeholder="Enter your email or username"]');
+                const passwordInput = e.target.querySelector('input[placeholder="Enter your password"]');
+
+                // Basic validation
+                if (!emailInput.value.trim()) {
+                    showMessage('Please enter your email address', 'error');
+                    emailInput.focus();
+                    return;
+                }
+
+                if (!passwordInput.value) {
+                    showMessage('Please enter your password', 'error');
+                    passwordInput.focus();
+                    return;
+                }
+
                 const formData = {
-                    email: e.target.querySelector('input[placeholder="Enter your email or username"]').value,
-                    password: e.target.querySelector('input[placeholder="Enter your password"]').value
+                    email: emailInput.value.trim(),
+                    password: passwordInput.value
                 };
 
+                console.log('Attempting login...');
                 // Call the authentication service
                 const response = await authService.login(formData);
+                console.log('Login response:', response);
                 
                 showMessage('Login successful! Redirecting to dashboard...', 'success');
 

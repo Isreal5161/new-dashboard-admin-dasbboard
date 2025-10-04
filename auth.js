@@ -55,27 +55,44 @@ class AuthService {
     // Login user
     async login(credentials) {
         try {
-            console.log('Logging in with credentials:', credentials);
+            console.log('Attempting login with:', { email: credentials.email });
+            
             const response = await fetch(`${this.apiBaseUrl}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({
                     email: credentials.email,
                     password: credentials.password
-                })
+                }),
+                credentials: 'include',
+                mode: 'cors'
             });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Login failed');
+            console.log('Response status:', response.status);
+            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+            let data;
+            try {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                    console.log('Response data:', data);
+                } else {
+                    console.error('Invalid content type:', contentType);
+                    throw new Error('Server returned invalid response format');
+                }
+            } catch (parseError) {
+                console.error('Error parsing response:', parseError);
+                throw new Error('Unable to process server response. Please try again.');
             }
 
-            const data = await response.json();
-            
+            if (!response.ok) {
+                throw new Error(data.message || data.error || 'Login failed');
+            }
+
             // Store the token and user data
             this.setToken(data.token);
             this.setUserData(data.user);
@@ -83,6 +100,9 @@ class AuthService {
             return data;
         } catch (error) {
             console.error('Login error:', error);
+            if (error.name === 'TypeError' || error.message.includes('fetch')) {
+                throw new Error('Network error: The server is not responding. Please try again later.');
+            }
             throw error;
         }
     }
