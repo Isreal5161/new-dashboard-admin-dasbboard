@@ -1,0 +1,54 @@
+/*===============================================================
+ * INITIALIZATION AND GLOBAL VARIABLES
+ *===============================================================*/
+
+// API Configuration
+const API_BASE_URL = 'https://real-estate-backend-d9es.onrender.com';
+
+// DOM Elements
+const menuToggle = document.getElementById('menuToggle');
+const sidebar = document.getElementById('sidebar');
+const closeSidebar = document.getElementById('closeSidebar');
+const overlay = document.getElementById('overlay');
+const navLinks = document.querySelectorAll('.nav-link');
+const pages = document.querySelectorAll('.page');
+const submenuToggles = document.querySelectorAll('.has-submenu');
+const notificationBadges = document.querySelectorAll('.notification-badge');
+
+// Global socket instance for notifications and real-time updates
+const socketConnection = {
+    socket: null,
+    
+    // Initialize socket connection
+    setupConnection() {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.warn('No auth token found for socket connection');
+                return;
+            }
+
+            if (this.socket) {
+                console.log('Socket connection already exists');
+                return;
+            }
+
+            // Connect to backend
+            this.socket = io(API_BASE_URL, {
+                auth: {
+                    token: token
+                }
+            });
+
+            this.socket.on('connect', () => {
+                console.log('Socket connected successfully');
+            });
+
+            this.socket.on('connect_error', (error) => {
+                console.error('Socket connection error:', error);
+            });
+        } catch (error) {
+            console.error('Error setting up socket connection:', error);
+        }
+    }
+};

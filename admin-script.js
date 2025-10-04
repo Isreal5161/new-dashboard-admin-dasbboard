@@ -2,9 +2,15 @@
 class AdminDashboard {
     constructor() {
         this.currentTab = 'dashboard';
-        this.currentUser = JSON.parse(localStorage.getItem('adminUser')) || null;
+        this.authService = new AuthService();
+        this.currentUser = this.authService.getUserData();
         this.charts = {};
         this.data = this.initializeMockData();
+        
+        if (!this.currentUser) {
+            window.location.href = 'login.html';
+            return;
+        }
         
         this.init();
     }

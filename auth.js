@@ -91,6 +91,11 @@ class AuthService {
                     password: userData.password
                 })
             });
+            
+            // If registration is successful, mark this as a new user
+            if (response.ok) {
+                localStorage.setItem('isNewUser', 'true');
+            }
 
             let data;
             try {

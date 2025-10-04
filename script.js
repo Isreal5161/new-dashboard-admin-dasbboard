@@ -29,26 +29,39 @@ const pages = document.querySelectorAll('.page');
 const submenuToggles = document.querySelectorAll('.has-submenu');
 
 // Setup submenu toggles
-submenuToggles.forEach(toggle => {
-    toggle.addEventListener('click', (e) => {
-        e.preventDefault();
-        const submenu = toggle.nextElementSibling;
-        
-        // Close other submenus
-        submenuToggles.forEach(otherToggle => {
-            if (otherToggle !== toggle) {
-                const otherSubmenu = otherToggle.nextElementSibling;
-                if (otherSubmenu && otherSubmenu.classList.contains('active')) {
-                    otherSubmenu.classList.remove('active');
-                    otherToggle.classList.remove('active');
+document.querySelectorAll('.has-submenu').forEach(menuItem => {
+    const link = menuItem.querySelector('.nav-link');
+    
+    if (link) {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const submenu = menuItem.querySelector('.submenu');
+            
+            // Close other submenus
+            document.querySelectorAll('.has-submenu').forEach(otherItem => {
+                if (otherItem !== menuItem) {
+                    const otherSubmenu = otherItem.querySelector('.submenu');
+                    if (otherSubmenu && otherSubmenu.classList.contains('active')) {
+                        otherSubmenu.classList.remove('active');
+                        const otherLink = otherItem.querySelector('.nav-link');
+                        if (otherLink) otherLink.classList.remove('active');
+                    }
                 }
+            });
+            
+            // Toggle current submenu
+            if (submenu) {
+                submenu.classList.toggle('active');
+                link.classList.toggle('active');
+            }
+            
+            // Set the current page if it's a submenu item
+            const pageId = link.getAttribute('data-page');
+            if (pageId) {
+                showPage(pageId);
             }
         });
-        
-        // Toggle clicked submenu
-        submenu.classList.toggle('active');
-        toggle.classList.toggle('active');
-    });
+    }
 });
 
 // Handle navigation active states
@@ -73,7 +86,38 @@ updateNavigation();
 document.addEventListener('DOMContentLoaded', () => {
     initializeDashboard();
     updateUserProfile();
+    setupSubmenuHandlers();
 });
+
+// Set up submenu click handlers
+function setupSubmenuHandlers() {
+    document.querySelectorAll('.submenu a').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // Prevent parent menu item click
+            
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Add active class to parent menu item
+            const parentMenu = item.closest('.has-submenu');
+            if (parentMenu) {
+                const parentLink = parentMenu.querySelector('.nav-link');
+                if (parentLink) {
+                    parentLink.classList.add('active');
+                }
+            }
+            
+            // Show the selected page
+            const pageId = item.getAttribute('data-page');
+            if (pageId) {
+                showPage(pageId);
+            }
+        });
+    });
+}
 
 // Update user profile information
 function updateUserProfile() {
@@ -81,6 +125,19 @@ function updateUserProfile() {
     const userData = authService.getUserData();
     
     if (userData) {
+        // Update welcome message
+        const welcomeMessage = document.querySelector('.page-header h1');
+        if (welcomeMessage) {
+            const isNewUser = localStorage.getItem('isNewUser') === 'true';
+            const welcomeText = isNewUser ? `Welcome` : `Welcome back`;
+            welcomeMessage.textContent = `${welcomeText}, ${userData.fullName}`;
+            
+            // Remove the new user flag after first login
+            if (isNewUser) {
+                localStorage.removeItem('isNewUser');
+            }
+        }
+
         // Update mobile header
         const mobileUserName = document.querySelector('.mobile-header .user-name');
         const mobileUserInfo = document.querySelector('.mobile-header .user-info');
@@ -95,6 +152,14 @@ function updateUserProfile() {
         // Update sidebar profile
         const sidebarUserName = document.querySelector('.sidebar .user-name');
         if (sidebarUserName) sidebarUserName.textContent = userData.fullName;
+
+        // Reset counters for new users
+        if (!localStorage.getItem(`${userData.id}_initialized`)) {
+            document.querySelectorAll('.stat-card h3').forEach(counter => {
+                counter.textContent = '0';
+            });
+            localStorage.setItem(`${userData.id}_initialized`, 'true');
+        }
     } else {
         // Redirect to login if no user data
         window.location.href = 'login.html';
