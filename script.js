@@ -46,6 +46,11 @@ function updateNavigation() {
 // Initial navigation setup
 updateNavigation();
 
+// Initialize dashboard authentication
+document.addEventListener('DOMContentLoaded', () => {
+    initializeDashboard();
+});
+
 // Listen for hash changes
 window.addEventListener('hashchange', updateNavigation);
 const notificationBadges = document.querySelectorAll('.notification-badge');

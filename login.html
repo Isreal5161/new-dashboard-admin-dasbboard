@@ -601,6 +601,7 @@
         </div>
     </div>
 
+    <script src="auth.js"></script>
     <script>
         // Tab switching functionality
         document.querySelectorAll('.tab-button').forEach(button => {
@@ -655,39 +656,54 @@
             const button = e.target.querySelector('.btn-primary');
             const originalText = button.innerHTML;
 
-            // Show loading state
-            button.classList.add('loading');
-            button.innerHTML = 'Signing in...';
+            try {
+                // Show loading state
+                button.classList.add('loading');
+                button.innerHTML = 'Signing in...';
 
-            // Simulate API call
-            setTimeout(() => {
-                button.classList.remove('loading');
-                button.innerHTML = originalText;
+                const formData = {
+                    email: e.target.querySelector('input[placeholder="Enter your email or username"]').value,
+                    password: e.target.querySelector('input[placeholder="Enter your password"]').value
+                };
 
-                // Simulate successful login
+                // Call the authentication service
+                const response = await authService.login(formData);
+                
                 showMessage('Login successful! Redirecting to dashboard...', 'success');
 
-                // Redirect to dashboard after 2 seconds
+                // Redirect to dashboard after successful login
                 setTimeout(() => {
                     window.location.href = 'index.html';
-                }, 2000);
-            }, 1500);
+                }, 1500);
+
+            } catch (error) {
+                console.error('Login error:', error);
+                showMessage(error.message || 'Login failed. Please try again.', 'error');
+                button.classList.remove('loading');
+                button.innerHTML = originalText;
+            }
         });
 
         // Registration form submission
         document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            // Password validation
-            const password = e.target.querySelector('input[placeholder="Create a strong password"]').value;
-            const confirmPassword = e.target.querySelector('input[placeholder="Confirm your password"]').value;
+            const formData = {
+                fullName: e.target.querySelector('input[placeholder="Enter your full name"]').value,
+                email: e.target.querySelector('input[placeholder="Enter your email address"]').value,
+                username: e.target.querySelector('input[placeholder="Choose a username"]').value,
+                password: e.target.querySelector('input[placeholder="Create a strong password"]').value,
+                confirmPassword: e.target.querySelector('input[placeholder="Confirm your password"]').value,
+                marketingConsent: e.target.querySelector('#marketing-emails').checked
+            };
 
-            if (password !== confirmPassword) {
+            // Password validation
+            if (formData.password !== formData.confirmPassword) {
                 showMessage('Passwords do not match. Please try again.', 'error');
                 return;
             }
 
-            if (password.length < 8) {
+            if (formData.password.length < 8) {
                 showMessage('Password must be at least 8 characters long.', 'error');
                 return;
             }
@@ -695,24 +711,28 @@
             const button = e.target.querySelector('.btn-primary');
             const originalText = button.innerHTML;
 
-            // Show loading state
-            button.classList.add('loading');
-            button.innerHTML = 'Creating account...';
+            try {
+                // Show loading state
+                button.classList.add('loading');
+                button.innerHTML = 'Creating account...';
 
-            // Simulate API call
-            setTimeout(() => {
-                button.classList.remove('loading');
-                button.innerHTML = originalText;
+                // Call the authentication service
+                await authService.register(formData);
+                
+                showMessage('Account created successfully! You can now log in.', 'success');
 
-                // Simulate successful registration
-                showMessage('Account created successfully! Please check your email to verify your account.', 'success');
-
-                // Switch to login tab after 3 seconds
+                // Switch to login tab after successful registration
                 setTimeout(() => {
                     document.querySelector('[data-tab="login"]').click();
-                    showMessage('Account verified! You can now log in.', 'success');
-                }, 3000);
-            }, 2000);
+                }, 2000);
+
+            } catch (error) {
+                console.error('Registration error:', error);
+                showMessage(error.message || 'Registration failed. Please try again.', 'error');
+            } finally {
+                button.classList.remove('loading');
+                button.innerHTML = originalText;
+            }
         });
 
         // Social login
