@@ -572,6 +572,10 @@ function showPage(pageId) {
         if (pageId === 'dashboard') {
             loadDashboardStats();
         }
+        // Load wallet page
+        else if (pageId === 'wallet') {
+            loadWalletPage();
+        }
     }
 
     // Update active nav link
