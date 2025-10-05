@@ -244,8 +244,13 @@ function updateUserProfile() {
             localStorage.setItem(`${userData.id}_initialized`, 'true');
         }
     } else {
-        // Redirect to login if no user data
-        window.location.href = 'login.html';
+        // No userData available: emit centralized unauthorized event instead of immediate redirect
+        try {
+            window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: { url: `${window.APP_CONFIG.API_BASE_URL}/profile`, token: localStorage.getItem('token') } }));
+        } catch (e) {
+            console.warn('Could not dispatch auth:unauthorized event from updateUserProfile', e);
+        }
+        return;
     }
 }
 
@@ -1827,6 +1832,15 @@ function updateVerificationUI(status) {
     // Remove all status classes
     statusIndicator.classList.remove('pending', 'approved', 'rejected');
     
+    // If status is null/undefined, hide verification UI gracefully
+    if (!status || typeof status.status === 'undefined') {
+        if (statusIndicator) statusIndicator.innerHTML = '';
+        if (uploadArea) uploadArea.style.display = 'block';
+        if (verifyBtn) verifyBtn.style.display = 'inline-block';
+        if (resubmitBtn) resubmitBtn.style.display = 'none';
+        return;
+    }
+
     // Update UI based on status
     switch(status.status) {
         case 'pending':

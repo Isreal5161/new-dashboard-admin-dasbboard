@@ -25,6 +25,13 @@ async function updateUserInterface() {
         try { console.debug('updateUserInterface token:', authService.getToken()); } catch (e) { console.debug('Could not read token:', e); }
         const userData = await authService.getProfile();
         console.debug('updateUserInterface userData:', userData);
+
+        // If profile fetch returned null (e.g. token invalid / user not found), handle gracefully
+        if (!userData) {
+            console.warn('updateUserInterface: no userData returned from profile - emitting auth:unauthorized and aborting UI update');
+            try { window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: { url: `${authService.apiBase}/profile`, token: authService.getToken() } })); } catch (e) { console.warn('Could not dispatch auth:unauthorized', e); }
+            return;
+        }
         
         // Update user name in the UI
         const userNameElements = document.querySelectorAll('.user-name');
