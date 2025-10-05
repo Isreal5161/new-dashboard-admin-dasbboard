@@ -239,7 +239,53 @@ const socketConnection = {
     socket: null,
     // Initialize socket connection
     setupConnection() {
-        // ...existing code...
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.debug('Socket setup skipped: no token');
+                return;
+            }
+
+            // Ensure socket.io client exists
+            if (typeof io === 'undefined') {
+                console.warn('Socket.IO client library not loaded');
+                return;
+            }
+
+            // Connect with auth token
+            this.socket = io(window.APP_CONFIG.API_BASE_URL.replace(/https?:\/\//, ''), {
+                path: '/socket.io',
+                auth: { token },
+                transports: ['websocket']
+            });
+
+            this.socket.on('connect', () => {
+                console.debug('Socket connected:', this.socket.id);
+            });
+
+            // Dashboard update events
+            this.socket.on('dashboardUpdate', (payload) => {
+                console.debug('Received dashboardUpdate event:', payload);
+                try { refreshDashboard(); } catch (e) { console.error('Error refreshing dashboard on socket event', e); }
+            });
+
+            this.socket.on('newBooking', (booking) => {
+                console.debug('Received newBooking event:', booking);
+                try { refreshDashboard(); } catch (e) {}
+            });
+
+            this.socket.on('newListing', (listing) => {
+                console.debug('Received newListing event:', listing);
+                try { refreshDashboard(); } catch (e) {}
+            });
+
+            // Fallback: if socket disconnects, attempt reconnects handled by socket.io client
+            this.socket.on('disconnect', (reason) => {
+                console.warn('Socket disconnected:', reason);
+            });
+        } catch (err) {
+            console.error('Error setting up socket connection:', err);
+        }
     },
     // Get socket instance
     getSocket() {
@@ -729,6 +775,17 @@ function setupNotifications() {
 
 // Call initialization when DOM is ready
 document.addEventListener('DOMContentLoaded', initializePage);
+
+// Polling fallback: refresh dashboard every 30 seconds
+try {
+    setInterval(() => {
+        if (document.querySelector('#dashboard-page')?.classList.contains('active')) {
+            refreshDashboard().catch(err => console.debug('Polling refresh failed:', err));
+        }
+    }, 30000);
+} catch (e) {
+    console.error('Failed to start dashboard polling:', e);
+}
 
 // User Menu Dropdown (Mobile)
 const userToggle = document.querySelector('.user-toggle');
