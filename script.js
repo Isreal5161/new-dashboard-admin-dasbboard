@@ -33,9 +33,16 @@ async function authorizedFetch(url, options = {}) {
 
     const res = await fetch(url, options);
     if (res.status === 401) {
-        // token invalid or expired
+        // token invalid or expired - log details for debugging
+        try {
+            const text = await res.text();
+            console.warn('authorizedFetch 401 for', url, 'token:', token, 'response:', text);
+        } catch (e) {
+            console.warn('authorizedFetch 401 for', url, 'token:', token, 'and response body could not be read');
+        }
+        // Remove token and redirect after a short delay so logs can be seen
         localStorage.removeItem('token');
-        window.location.href = 'login.html';
+        setTimeout(() => { window.location.href = 'login.html'; }, 500);
         throw new Error('Unauthorized');
     }
     return res;
