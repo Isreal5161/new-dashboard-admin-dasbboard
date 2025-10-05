@@ -20,10 +20,10 @@ class AuthService {
     // Check if the server is available
     async checkServer() {
         try {
-            console.log('Checking server health at:', this.apiBaseUrl.replace('/api/auth', '/api/health'));
-                const healthUrl = `${this.apiBase}/health`;
-                console.log('Checking server health at:', healthUrl);
-                const response = await fetch(healthUrl, {
+            // Use the configured apiBase for health checks (avoid undefined apiBaseUrl)
+            const healthUrl = `${this.apiBase}/health`;
+            console.log('Checking server health at:', healthUrl);
+            const response = await fetch(healthUrl, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json'
@@ -89,7 +89,8 @@ class AuthService {
     async register(userData) {
         try {
             console.log('Registering user with data:', userData);
-            const response = await fetch(`${this.apiBaseUrl}/register`, {
+            // Registration endpoint is under the auth base
+            const response = await fetch(`${this.authBase}/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
