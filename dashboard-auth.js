@@ -1,6 +1,17 @@
 // Authentication Guard
 function checkAuth() {
-    if (!authService.isAuthenticated()) {
+    // Debug: log token value to help diagnose unexpected redirects
+    try {
+        const token = authService.getToken();
+        console.debug('checkAuth token:', token);
+        // Treat literal 'undefined' or 'null' strings as missing tokens
+        if (!token || token === 'undefined' || token === 'null') {
+            console.warn('No valid auth token found, redirecting to login');
+            window.location.href = 'login.html';
+            return false;
+        }
+    } catch (e) {
+        console.error('Error reading auth token in checkAuth:', e);
         window.location.href = 'login.html';
         return false;
     }
@@ -10,7 +21,10 @@ function checkAuth() {
 // Update UI with user data
 async function updateUserInterface() {
     try {
+        // Debug: log token before fetching profile
+        try { console.debug('updateUserInterface token:', authService.getToken()); } catch (e) { console.debug('Could not read token:', e); }
         const userData = await authService.getProfile();
+        console.debug('updateUserInterface userData:', userData);
         
         // Update user name in the UI
         const userNameElements = document.querySelectorAll('.user-name');
