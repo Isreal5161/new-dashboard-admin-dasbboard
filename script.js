@@ -204,9 +204,26 @@ function setupSubmenuHandlers() {
 
 // Update user profile information
 function updateUserProfile() {
+    // Prefer using centralized apiClient when available (live backend)
+    if (window.apiClient && typeof window.apiClient.getProfile === 'function') {
+        window.apiClient.getProfile()
+            .then(userData => {
+                if (!userData) {
+                    window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: { url: `${window.APP_CONFIG.API_BASE_URL}/profile`, token: localStorage.getItem('token') } }));
+                    return;
+                }
+                applyUserDataToUI(userData);
+            })
+            .catch(err => {
+                console.warn('Failed to fetch profile via apiClient:', err);
+                try { window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: { url: `${window.APP_CONFIG.API_BASE_URL}/profile`, token: localStorage.getItem('token') } })); } catch (e) {}
+            });
+        return;
+    }
+
     const authService = new AuthService();
     const userData = authService.getUserData();
-    
+
     if (userData) {
         // Update welcome message
         const welcomeMessage = document.querySelector('.page-header h1');
@@ -251,6 +268,34 @@ function updateUserProfile() {
             console.warn('Could not dispatch auth:unauthorized event from updateUserProfile', e);
         }
         return;
+    }
+}
+
+// Helper to apply user data to various UI places
+function applyUserDataToUI(userData) {
+    if (!userData) return;
+    const welcomeMessage = document.querySelector('.page-header h1');
+    if (welcomeMessage) {
+        const isNewUser = localStorage.getItem('isNewUser') === 'true';
+        const welcomeText = isNewUser ? `Welcome` : `Welcome back`;
+        welcomeMessage.textContent = `${welcomeText}, ${userData.fullName}`;
+        if (isNewUser) localStorage.removeItem('isNewUser');
+    }
+    const mobileUserName = document.querySelector('.mobile-header .user-name');
+    const mobileUserInfo = document.querySelector('.mobile-header .user-info');
+    if (mobileUserName) mobileUserName.textContent = userData.fullName;
+    if (mobileUserInfo) {
+        const userName = mobileUserInfo.querySelector('.user-name');
+        const userEmail = mobileUserInfo.querySelector('.user-email');
+        if (userName) userName.textContent = userData.fullName;
+        if (userEmail) userEmail.textContent = userData.email;
+    }
+    const sidebarUserName = document.querySelector('.sidebar .user-name');
+    if (sidebarUserName) sidebarUserName.textContent = userData.fullName;
+
+    if (!localStorage.getItem(`${userData.id}_initialized`)) {
+        document.querySelectorAll('.stat-card h3').forEach(counter => { counter.textContent = '0'; });
+        localStorage.setItem(`${userData.id}_initialized`, 'true');
     }
 }
 
@@ -461,16 +506,26 @@ async function refreshDashboard() {
 
 async function loadDashboardStats() {
     try {
-        const response = await authorizedFetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/listings/dashboard/stats`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch dashboard stats');
-        }
         let data = {};
-        try {
-            data = await response.json();
-        } catch (jsonError) {
-            showNotification('Dashboard stats response is not valid JSON', 'error');
-            return;
+        if (window.apiClient && typeof window.apiClient.getDashboardStats === 'function') {
+            try {
+                data = await window.apiClient.getDashboardStats();
+            } catch (err) {
+                console.warn('apiClient.getDashboardStats failed', err);
+                showNotification('Failed to load dashboard statistics', 'error');
+                return;
+            }
+        } else {
+            const response = await authorizedFetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/listings/dashboard/stats`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch dashboard stats');
+            }
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                showNotification('Dashboard stats response is not valid JSON', 'error');
+                return;
+            }
         }
 
         // Update statistics with null checks
