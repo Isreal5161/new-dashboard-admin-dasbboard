@@ -5,7 +5,15 @@ const USER_DATA_KEY = 'userData';
 
 class AuthService {
     constructor() {
-        this.apiBaseUrl = 'https://real-estate-backend-d9es.onrender.com/api/auth';
+        // Use the global APP_CONFIG if available so frontend and auth service share the same backend base URL
+        const frontendBase = (typeof window !== 'undefined' && window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
+            ? window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')
+            : 'https://real-estate-backend-d9es.onrender.com';
+
+        // Base for general API endpoints (e.g. /api/profile, /api/payouts)
+        this.apiBase = `${frontendBase}/api`;
+        // Base specifically for auth endpoints
+        this.authBase = `${this.apiBase}/auth`;
         this.maxRetries = 3; // Maximum number of retry attempts
     }
 
@@ -13,7 +21,9 @@ class AuthService {
     async checkServer() {
         try {
             console.log('Checking server health at:', this.apiBaseUrl.replace('/api/auth', '/api/health'));
-            const response = await fetch(this.apiBaseUrl.replace('/api/auth', '/api/health'), {
+                const healthUrl = `${this.apiBase}/health`;
+                console.log('Checking server health at:', healthUrl);
+                const response = await fetch(healthUrl, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json'
@@ -135,7 +145,7 @@ class AuthService {
 
             console.log('Attempting login with:', { email: credentials.email });
             
-            const response = await this.makeRequest(`${this.apiBaseUrl}/login`, {
+            const response = await this.makeRequest(`${this.authBase}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -186,7 +196,24 @@ class AuthService {
 
     // Set the authentication token
     setToken(token) {
-        localStorage.setItem(AUTH_TOKEN_KEY, token);
+        try {
+            localStorage.setItem(AUTH_TOKEN_KEY, token);
+            // Try to parse token expiry for debugging
+            try {
+                const parts = token.split('.');
+                if (parts.length >= 2) {
+                    const payload = JSON.parse(atob(parts[1]));
+                    const exp = payload.exp ? new Date(payload.exp * 1000) : null;
+                    console.debug('Auth token saved. Expires at:', exp);
+                } else {
+                    console.debug('Auth token saved (no JWT payload)');
+                }
+            } catch (e) {
+                console.debug('Auth token saved (could not parse expiry)', e);
+            }
+        } catch (err) {
+            console.error('Failed to save token to localStorage', err);
+        }
     }
 
     // Get the stored user data
@@ -213,13 +240,21 @@ class AuthService {
                 throw new Error('No authentication token found');
             }
 
-            const response = await fetch('https://real-estate-backend-d9es.onrender.com/profile', {
+            const response = await fetch(`${this.apiBase}/profile`, {
+                method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
                 }
             });
 
             if (!response.ok) {
+                if (response.status === 401) {
+                    // Token invalid or expired - ensure user is redirected to login
+                    localStorage.removeItem(AUTH_TOKEN_KEY);
+                    window.location.href = 'login.html';
+                    return null;
+                }
                 throw new Error('Failed to fetch user profile');
             }
 
@@ -239,8 +274,7 @@ class AuthService {
             if (!token) {
                 throw new Error('No authentication token found');
             }
-
-            const response = await fetch(`${this.apiBaseUrl}/api/users/profile`, {
+            const response = await fetch(`${this.apiBase}/profile`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,

@@ -18,6 +18,29 @@ window.APP_CONFIG = {
     API_BASE_URL: 'https://real-estate-backend-d9es.onrender.com'
 };
 
+// Helper to perform fetch with Authorization header and common error handling
+async function authorizedFetch(url, options = {}) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        // Redirect to login if token missing
+        window.location.href = 'login.html';
+        throw new Error('No token');
+    }
+
+    options.headers = Object.assign({}, options.headers || {}, {
+        'Authorization': `Bearer ${token}`
+    });
+
+    const res = await fetch(url, options);
+    if (res.status === 401) {
+        // token invalid or expired
+        localStorage.removeItem('token');
+        window.location.href = 'login.html';
+        throw new Error('Unauthorized');
+    }
+    return res;
+}
+
 // Configure Axios defaults
 if (window.axios) {
     axios.defaults.baseURL = window.APP_CONFIG.API_BASE_URL;
@@ -368,11 +391,7 @@ async function refreshDashboard() {
 
 async function loadDashboardStats() {
     try {
-        const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/listings/dashboard/stats`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+        const response = await authorizedFetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/listings/dashboard/stats`);
         if (!response.ok) {
             throw new Error('Failed to fetch dashboard stats');
         }
@@ -1097,7 +1116,7 @@ function setupForms() {
             }
 
             // Send data to backend using fetch
-            fetch('https://real-estate-backend-d9es.onrender.com/api/listings', {
+            fetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/listings`, {
                 method: 'POST',
                 body: formData
             })
@@ -1229,7 +1248,7 @@ async function uploadProfilePicture(file) {
         window.location.href = 'login.html';
         return;
     }
-    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/profile/picture`, {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/profile/picture`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1256,7 +1275,7 @@ async function deleteProfilePicture() {
         window.location.href = 'login.html';
         return;
     }
-    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/profile/picture`, {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/profile/picture`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1327,7 +1346,7 @@ async function updatePassword(currentPassword, newPassword) {
         window.location.href = 'login.html';
         return;
     }
-    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/profile/password`, {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/profile/password`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -1359,7 +1378,7 @@ async function updateSecurityPreferences(preferences) {
         window.location.href = 'login.html';
         return;
     }
-    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/profile/security`, {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/profile/security`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -1389,7 +1408,7 @@ async function setup2FA() {
         window.location.href = 'login.html';
         return;
     }
-    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/profile/2fa/setup`, {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/profile/2fa/setup`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1515,7 +1534,7 @@ async function uploadVerificationDocuments(files) {
         window.location.href = 'login.html';
         return;
     }
-    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/profile/verification/documents`, {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/profile/verification/documents`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1541,7 +1560,7 @@ async function checkVerificationStatus() {
         window.location.href = 'login.html';
         return;
     }
-    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/profile/verification/status`, {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/profile/verification/status`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -1796,6 +1815,7 @@ function updateVerificationUI(status) {
 }
 
 // Payout System Integration
+// Ensure BACKEND_URL consistently points to the API root
 const BACKEND_URL = 'https://real-estate-backend-d9es.onrender.com/api';
 const isDevelopment = true; // Set this based on your environment
 
@@ -1993,7 +2013,7 @@ async function getPayoutMethods() {
         window.location.href = 'login.html';
         return;
     }
-    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/profile/payout-methods`, {
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/profile/payout-methods`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -2238,11 +2258,7 @@ async function fetchPayoutHistory() {
             window.location.href = 'login.html';
             return;
         }
-        const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/payouts/requests`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+        const response = await authorizedFetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/payouts/requests`);
         if (!response.ok) {
             throw new Error('Failed to fetch payout history');
         }
@@ -2610,7 +2626,7 @@ function setupMessagesPage() {
 
         try {
             // Send message via API
-            const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/messages/send', {
+        const response = await authorizedFetch('https://real-estate-backend-d9es.onrender.com/api/messages/send', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -3443,7 +3459,7 @@ async function handleListingSubmission(form, formData) {
         }
 
         // Send to backend
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/listings', {
+    const response = await authorizedFetch('https://real-estate-backend-d9es.onrender.com/api/listings', {
             method: 'POST',
             body: formData
         });
@@ -3489,7 +3505,7 @@ async function handleListingDeletion(listingId) {
         }
 
         // Send delete request
-        const response = await fetch(`https://real-estate-backend-d9es.onrender.com/api/listings/${listingId}`, {
+    const response = await authorizedFetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/listings/${listingId}`, {
             method: 'DELETE'
         });
 
@@ -3916,12 +3932,7 @@ const defaultProfile = {
 // Profile API functions
 async function loadProfileData() {
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/profile', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+        const response = await authorizedFetch('https://real-estate-backend-d9es.onrender.com/api/profile', { method: 'GET' });
 
         if (!response.ok) {
             throw new Error('Failed to load profile data');
@@ -3939,13 +3950,7 @@ async function loadProfileData() {
 async function setup2FAAuthentication() {
     try {
         // Request 2FA setup
-        const setupResponse = await fetch('https://real-estate-backend-d9es.onrender.com/api/profile/2fa/setup', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-
+        const setupResponse = await authorizedFetch('https://real-estate-backend-d9es.onrender.com/api/profile/2fa/setup', { method: 'POST' });
         const setupData = await setupResponse.json();
         
         // Show QR code to user
@@ -3954,14 +3959,11 @@ async function setup2FAAuthentication() {
         
         // Get verification code from user
         const verificationCode = await promptForVerificationCode();
-        
+
         // Verify the code
-        const verifyResponse = await fetch('https://real-estate-backend-d9es.onrender.com/api/profile/2fa/verify', {
+        const verifyResponse = await authorizedFetch('https://real-estate-backend-d9es.onrender.com/api/profile/2fa/verify', {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token: verificationCode })
         });
 
@@ -3984,11 +3986,8 @@ async function uploadVerificationDocuments(files) {
             formData.append('documents', file);
         });
 
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/profile/verification/documents', {
+        const response = await authorizedFetch('https://real-estate-backend-d9es.onrender.com/api/profile/verification/documents', {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
             body: formData
         });
 
@@ -4008,11 +4007,7 @@ async function uploadVerificationDocuments(files) {
 // Real-time verification status checking
 async function checkVerificationStatus() {
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/profile/verification/status', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+        const response = await authorizedFetch('https://real-estate-backend-d9es.onrender.com/api/profile/verification/status', { method: 'GET' });
 
         const data = await response.json();
         updateVerificationUI(data.status);
@@ -4026,10 +4021,9 @@ async function checkVerificationStatus() {
 // Update advanced settings
 async function updateAdvancedSettings(settings) {
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/profile/settings', {
+        const response = await authorizedFetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/profile/settings`, {
             method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(settings)
@@ -4051,11 +4045,10 @@ async function updateAdvancedSettings(settings) {
 // Update profile data
 async function updateProfileData(profileData) {
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/profile/update', {
+        const response = await authorizedFetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/profile/update`, {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(profileData)
         });
@@ -4353,7 +4346,7 @@ async function loadMyListings() {
     listingsGrid.style.display = 'none';
     
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/listings');
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/listings`);
         const data = await response.json();
         
         if (!response.ok) {
@@ -4473,7 +4466,7 @@ async function deleteListing(listingId) {
             deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
         }
         
-        const response = await fetch(`https://real-estate-backend-d9es.onrender.com/api/listings/${listingId}`, {
+    const response = await authorizedFetch(`${window.APP_CONFIG.API_BASE_URL.replace(/\/$/, '')}/api/listings/${listingId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -4582,16 +4575,16 @@ async function initializeBookingSystem() {
 // Load booking statistics
 async function loadBookingStats() {
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/bookings/stats', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+        const response = await authorizedFetch('https://real-estate-backend-d9es.onrender.com/api/bookings/stats');
         const stats = await response.json();
         
-        document.getElementById('total-bookings').textContent = stats.total || 0;
-        document.getElementById('active-bookings').textContent = stats.active || 0;
-        document.getElementById('completed-bookings').textContent = stats.completed || 0;
+    const totalEl = document.getElementById('total-bookings');
+    const activeEl = document.getElementById('active-bookings');
+    const completedEl = document.getElementById('completed-bookings');
+
+    if (totalEl) totalEl.textContent = (stats && stats.total) ? stats.total : 0;
+    if (activeEl) activeEl.textContent = (stats && stats.active) ? stats.active : 0;
+    if (completedEl) completedEl.textContent = (stats && stats.completed) ? stats.completed : 0;
     } catch (error) {
         console.error('Error loading booking stats:', error);
         showNotification('Failed to load booking statistics', 'error');
@@ -4609,11 +4602,7 @@ async function loadBookings(filter = 'all') {
         emptyState.style.display = 'none';
         bookingsGrid.style.display = 'none';
 
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/bookings', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+        const response = await authorizedFetch('https://real-estate-backend-d9es.onrender.com/api/bookings');
         const bookings = await response.json();
 
         currentBookings = bookings;
@@ -5149,7 +5138,7 @@ const notificationSystem = {
 
     async updateBookingStats() {
         try {
-            const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/bookings/stats');
+            const response = await authorizedFetch('https://real-estate-backend-d9es.onrender.com/api/bookings/stats');
             const stats = await response.json();
             
             const elements = {
