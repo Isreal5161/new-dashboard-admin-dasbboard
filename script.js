@@ -22,8 +22,12 @@ window.APP_CONFIG = {
 async function authorizedFetch(url, options = {}) {
     const token = localStorage.getItem('token');
     if (!token) {
-        // Redirect to login if token missing
-        window.location.href = 'login.html';
+        // No token: emit centralized unauthorized event instead of immediate redirect
+        try {
+            window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: { url, token: null } }));
+        } catch (e) {
+            console.warn('Could not dispatch auth:unauthorized event', e);
+        }
         throw new Error('No token');
     }
 
@@ -61,8 +65,12 @@ if (window.axios) {
     if (token) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     } else {
-        // Redirect to login if not authenticated
-        window.location.href = 'login.html';
+        // No token available for axios — emit centralized unauthorized event instead of redirecting here
+        try {
+            window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: { url: window.APP_CONFIG.API_BASE_URL, token: null } }));
+        } catch (e) {
+            console.warn('Could not dispatch auth:unauthorized event (axios block)', e);
+        }
     }
 }
 

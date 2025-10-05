@@ -94,14 +94,51 @@ async function initializeDashboard() {
 // Global auth unauthorized handler to centralize logout behavior
 window.addEventListener('auth:unauthorized', (e) => {
     console.warn('Global auth:unauthorized event received', e.detail);
-    // Avoid double-redirect loops: only redirect if on a protected page
-    const currentHash = window.location.hash || '#dashboard';
-    // Show a friendly message and then redirect once
-    alert('Your session has expired or is invalid. You will be redirected to the login page.');
-    // Clear sensitive local data then redirect
-    localStorage.removeItem('token');
-    localStorage.removeItem('userData');
-    setTimeout(() => {
+    // Prevent multiple banners
+    if (window.__authBannerShown) return;
+    window.__authBannerShown = true;
+
+    // Create a small non-blocking banner with action buttons so the user can stay on the page
+    try {
+        const banner = document.createElement('div');
+        banner.id = 'auth-banner';
+        banner.style.position = 'fixed';
+        banner.style.top = '12px';
+        banner.style.left = '50%';
+        banner.style.transform = 'translateX(-50%)';
+        banner.style.zIndex = '99999';
+        banner.style.background = '#fff8f0';
+        banner.style.color = '#5a2b00';
+        banner.style.border = '1px solid #f0c5a0';
+        banner.style.padding = '12px 16px';
+        banner.style.borderRadius = '8px';
+        banner.style.boxShadow = '0 6px 18px rgba(0,0,0,0.08)';
+        banner.innerHTML = `
+            <div style="display:flex;gap:12px;align-items:center;">
+                <div style="flex:1">Your session has expired or is invalid. You can stay on this page, but some features may not work.</div>
+                <div style="display:flex;gap:8px;">
+                    <button id="auth-login-btn" style="background:#1f6feb;color:white;border:none;padding:8px 10px;border-radius:6px;cursor:pointer;">Login</button>
+                    <button id="auth-dismiss-btn" style="background:transparent;border:1px solid #ccc;padding:6px 8px;border-radius:6px;cursor:pointer;">Dismiss</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(banner);
+
+        document.getElementById('auth-login-btn').addEventListener('click', () => {
+            // Clear sensitive data and go to login
+            localStorage.removeItem('token');
+            localStorage.removeItem('userData');
+            window.location.href = 'login.html';
+        });
+
+        document.getElementById('auth-dismiss-btn').addEventListener('click', () => {
+            banner.remove();
+        });
+    } catch (err) {
+        // Fallback: if DOM manipulation fails, perform a soft logout
+        console.warn('Could not show auth banner, falling back to logout', err);
+        localStorage.removeItem('token');
+        localStorage.removeItem('userData');
         window.location.href = 'login.html';
-    }, 800);
+    }
 });

@@ -263,9 +263,15 @@ class AuthService {
 
             if (!response.ok) {
                 if (response.status === 401) {
-                    // Token invalid or expired - ensure user is redirected to login
+                    // Token invalid or expired - emit centralized unauthorized event
+                    try {
+                        const token = this.getToken();
+                        window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: { url: `${this.apiBase}/profile`, token } }));
+                    } catch (e) {
+                        console.warn('Could not dispatch auth:unauthorized event from getProfile', e);
+                    }
+                    // Remove local token to avoid repeated failures and return null to callers
                     localStorage.removeItem(AUTH_TOKEN_KEY);
-                    window.location.href = 'login.html';
                     return null;
                 }
                 throw new Error('Failed to fetch user profile');
