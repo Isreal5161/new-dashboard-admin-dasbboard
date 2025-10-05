@@ -481,14 +481,33 @@ if (overlay) {
 }
 
 // Submenu Toggle
+// Improved submenu toggle logic for sidebar profile options
 submenuToggles.forEach(submenu => {
     const link = submenu.querySelector('.nav-link');
-    link.addEventListener('click', (e) => {
-        if (submenu.querySelector('.submenu')) {
+    const submenuList = submenu.querySelector('.submenu');
+    const arrow = submenu.querySelector('.submenu-toggle');
+    if (link && submenuList) {
+        link.addEventListener('click', (e) => {
             e.preventDefault();
-            submenu.classList.toggle('open');
-        }
-    });
+            // Close other submenus
+            submenuToggles.forEach(otherItem => {
+                if (otherItem !== submenu) {
+                    const otherSubmenu = otherItem.querySelector('.submenu');
+                    const otherArrow = otherItem.querySelector('.submenu-toggle');
+                    if (otherSubmenu && otherSubmenu.classList.contains('active')) {
+                        otherSubmenu.classList.remove('active');
+                        const otherLink = otherItem.querySelector('.nav-link');
+                        if (otherLink) otherLink.classList.remove('active');
+                        if (otherArrow) otherArrow.classList.remove('rotated');
+                    }
+                }
+            });
+            // Toggle current submenu
+            submenuList.classList.toggle('active');
+            link.classList.toggle('active');
+            if (arrow) arrow.classList.toggle('rotated');
+        });
+    }
 });
 
 /*===============================================================
