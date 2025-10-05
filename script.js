@@ -63,14 +63,12 @@ document.querySelectorAll('.has-submenu').forEach(menuItem => {
                     }
                 }
             });
-
             // Toggle current submenu
             if (submenu) {
                 submenu.classList.toggle('active');
                 link.classList.toggle('active');
                 if (arrow) arrow.classList.toggle('rotated');
             }
-
             // Set the current page if it's a submenu item
             const pageId = link.getAttribute('data-page');
             if (pageId) {
@@ -216,177 +214,47 @@ const notificationBadges = document.querySelectorAll('.notification-badge');
 // Global socket instance for notifications and real-time updates
 const socketConnection = {
     socket: null,
-    
     // Initialize socket connection
     setupConnection() {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                console.warn('No auth token found for socket connection');
-                return;
-            }
-
-            if (this.socket) {
-                console.log('Socket connection already exists');
-                return;
-            }
-
-            // Connect to your backend URL
-            let socketToken = typeof token !== 'undefined' ? token : localStorage.getItem('token');
-            if (!socketToken) {
-                window.location.href = 'login.html';
-                return;
-            }
-            this.socket = io(window.APP_CONFIG.API_BASE_URL, {
-                auth: {
-                    token: socketToken
-                }
-            });
-
-            this.socket.on('connect', () => {
-                console.log('Socket connected successfully');
-            });
-
-            this.socket.on('connect_error', (error) => {
-                console.error('Socket connection error:', error);
-            });
-        } catch (error) {
-            console.error('Error setting up socket connection:', error);
-        }
-
-        this.socket = io('wss://real-estate-backend-d9es.onrender.com', {
-            auth: { token },
-            reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
-            secure: true,
-            transports: ['websocket']
-        });
-
-        this.setupEventListeners();
+        // ...existing code...
     },
-
-    // Set up socket event listeners
-    setupEventListeners() {
-        // Connection events
-        this.socket.on('connect', () => {
-            console.log('Connected to notification system');
-            showNotification('Connected to notification system', 'success');
-        });
-
-        this.socket.on('connect_error', (error) => {
-            console.error('Socket connection error:', error);
-            if (error.message === 'Authentication error') {
-                console.error('Socket authentication failed');
-                showNotification('Authentication error: Please log in again', 'error');
-            } else {
-                showNotification('Connection error: Retrying...', 'error');
-            }
-        });
-
-        this.socket.on('disconnect', (reason) => {
-            console.log('Disconnected:', reason);
-            showNotification('Disconnected from notification system', 'error');
-        });
-
-        this.socket.on('reconnect', (attemptNumber) => {
-            console.log('Reconnected after', attemptNumber, 'attempts');
-            showNotification('Reconnected to notification system', 'success');
-        });
-
-        this.socket.on('reconnect_error', (error) => {
-            console.error('Reconnection error:', error);
-            showNotification('Failed to reconnect. Please refresh the page.', 'error');
-        });
-
-        // Message events
-        this.socket.on('new_message', (message) => {
-            if (window.handleNewMessage) {
-                window.handleNewMessage(message);
-            }
-        });
-
-        // Typing events
-        this.socket.on('typing_start', (userId) => {
-            if (window.handleTypingStart) {
-                window.handleTypingStart(userId);
-            }
-        });
-
-        this.socket.on('typing_end', (userId) => {
-            if (window.handleTypingEnd) {
-                window.handleTypingEnd(userId);
-            }
-        });
-
-        // Online/Offline status
-        this.socket.on('user_online', (userId) => {
-            if (window.handleUserOnline) {
-                window.handleUserOnline(userId);
-            }
-        });
-
-        this.socket.on('user_offline', (userId) => {
-            if (window.handleUserOffline) {
-                window.handleUserOffline(userId);
-            }
-        });
-
-        // Message status events
-        this.socket.on('message_delivered', (messageId) => {
-            if (window.handleMessageDelivered) {
-                window.handleMessageDelivered(messageId);
-            }
-        });
-
-        this.socket.on('message_read', (data) => {
-            if (window.handleMessageRead) {
-                window.handleMessageRead(data);
-            }
-        });
-    },
-
     // Get socket instance
     getSocket() {
         return this.socket;
     },
-
     // Message methods
     sendMessage(receiverId, message) {
         if (!this.socket?.connected) return false;
         this.socket.emit('send_message', { receiverId, message });
         return true;
     },
-
     markMessageAsRead(conversationId, messageId) {
         if (!this.socket?.connected) return;
         this.socket.emit('message_read', { conversationId, messageId });
     },
-
     // Typing indicators
     sendTypingStart(receiverId) {
         if (!this.socket?.connected) return;
         this.socket.emit('typing_start', receiverId);
     },
-
     sendTypingEnd(receiverId) {
         if (!this.socket?.connected) return;
         this.socket.emit('typing_end', receiverId);
     }
 };
 
-    // Function to check socket connection status
-    function checkSocketConnection() {
-        if (!socketConnection.socket) {
-            console.warn('Socket not initialized');
-            return false;
-        }
-        return socketConnection.socket.connected;
+// Function to check socket connection status
+function checkSocketConnection() {
+    if (!socketConnection.socket) {
+        console.warn('Socket not initialized');
+        return false;
     }
-    
-    // Set up socket event handlers for notifications
-    function setupNotificationHandlers() {
-        if (!socketConnection.socket) return;
+    return socketConnection.socket.connected;
+}
+
+// Set up socket event handlers for notifications
+function setupNotificationHandlers() {
+    if (!socketConnection.socket) return;
         
         // Handle new booking notifications
         socketConnection.socket.on('newBooking', (booking) => {
@@ -480,36 +348,7 @@ if (overlay) {
     overlay.addEventListener('click', closeSidebarMenu);
 }
 
-// Submenu Toggle
-// Improved submenu toggle logic for sidebar profile options
-submenuToggles.forEach(submenu => {
-    const link = submenu.querySelector('.nav-link');
-    const submenuList = submenu.querySelector('.submenu');
-    const arrow = submenu.querySelector('.submenu-toggle');
-    if (link && submenuList) {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            // Close other submenus
-            submenuToggles.forEach(otherItem => {
-                if (otherItem !== submenu) {
-                    const otherSubmenu = otherItem.querySelector('.submenu');
-                    const otherArrow = otherItem.querySelector('.submenu-toggle');
-                    if (otherSubmenu && otherSubmenu.classList.contains('active')) {
-                        otherSubmenu.classList.remove('active');
-                        const otherLink = otherItem.querySelector('.nav-link');
-                        if (otherLink) otherLink.classList.remove('active');
-                        if (otherArrow) otherArrow.classList.remove('rotated');
-                    }
-                }
-            });
-            // Toggle current submenu
-            submenuList.classList.toggle('active');
-            link.classList.toggle('active');
-            if (arrow) arrow.classList.toggle('rotated');
-        });
-    }
-});
-
+// ...existing code...
 /*===============================================================
  * DASHBOARD FUNCTIONALITY
  *===============================================================*/
@@ -529,7 +368,11 @@ async function refreshDashboard() {
 
 async function loadDashboardStats() {
     try {
-        const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/listings/dashboard/stats`);
+        const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/listings/dashboard/stats`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
         if (!response.ok) {
             throw new Error('Failed to fetch dashboard stats');
         }
@@ -2397,7 +2240,7 @@ async function fetchPayoutHistory() {
         }
         const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/payouts/requests`, {
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         });
         if (!response.ok) {
@@ -4209,7 +4052,7 @@ async function updateAdvancedSettings(settings) {
 async function updateProfileData(profileData) {
     try {
         const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/profile/update', {
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -4739,7 +4582,11 @@ async function initializeBookingSystem() {
 // Load booking statistics
 async function loadBookingStats() {
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/bookings/stats');
+        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/bookings/stats', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
         const stats = await response.json();
         
         document.getElementById('total-bookings').textContent = stats.total || 0;
@@ -4762,7 +4609,11 @@ async function loadBookings(filter = 'all') {
         emptyState.style.display = 'none';
         bookingsGrid.style.display = 'none';
 
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/bookings');
+        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/bookings', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
         const bookings = await response.json();
 
         currentBookings = bookings;

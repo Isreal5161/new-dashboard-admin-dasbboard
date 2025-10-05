@@ -213,7 +213,7 @@ class AuthService {
                 throw new Error('No authentication token found');
             }
 
-            const response = await fetch(`${this.apiBaseUrl}/api/users/profile`, {
+            const response = await fetch('https://real-estate-backend-d9es.onrender.com/profile', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
