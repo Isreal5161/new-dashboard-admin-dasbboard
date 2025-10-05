@@ -812,33 +812,32 @@
             input.addEventListener('focus', function() {
                 this.parentElement.style.transform = 'scale(1.02)';
             });
-
             input.addEventListener('blur', function() {
                 this.parentElement.style.transform = 'scale(1)';
             });
         });
 
-        // Email validation
-        document.querySelectorAll('input[type="email"]').forEach(input => {
-            input.addEventListener('blur', function() {
+        // Login identifier validation (email or username)
+        const loginIdentifier = document.getElementById('login-identifier');
+        const loginError = document.getElementById('login-error');
+        if (loginIdentifier && loginError) {
+            loginIdentifier.addEventListener('blur', function() {
+                const value = this.value.trim();
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (this.value && !emailRegex.test(this.value)) {
-                    showMessage('Please enter a valid email address.', 'error');
-                    this.focus();
+                const usernameRegex = /^[a-zA-Z0-9_]{3,}$/;
+                if (!value) {
+                    loginError.textContent = 'Please enter your email or username.';
+                    loginError.style.display = 'block';
+                } else if (emailRegex.test(value)) {
+                    loginError.style.display = 'none';
+                } else if (!usernameRegex.test(value)) {
+                    loginError.textContent = 'Username must be at least 3 characters long and contain only letters, numbers, and underscores.';
+                    loginError.style.display = 'block';
+                } else {
+                    loginError.style.display = 'none';
                 }
             });
-        });
-
-        // Username validation
-        document.querySelectorAll('input[placeholder*="username"]').forEach(input => {
-            input.addEventListener('blur', function() {
-                const username = this.value;
-                if (username && (username.length < 3 || !/^[a-zA-Z0-9_]+$/.test(username))) {
-                    showMessage('Username must be at least 3 characters long and contain only letters, numbers, and underscores.', 'error');
-                    this.focus();
-                }
-            });
-        });
+        }
     </script>
 </body>
 </html>
