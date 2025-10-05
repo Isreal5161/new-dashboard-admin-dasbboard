@@ -199,9 +199,14 @@ const socketConnection = {
             }
 
             // Connect to your backend URL
+            let socketToken = typeof token !== 'undefined' ? token : localStorage.getItem('token');
+            if (!socketToken) {
+                window.location.href = 'login.html';
+                return;
+            }
             this.socket = io(window.APP_CONFIG.API_BASE_URL, {
                 auth: {
-                    token: token
+                    token: socketToken
                 }
             });
 
@@ -1324,7 +1329,12 @@ async function uploadProfilePicture(file) {
         const formData = new FormData();
         formData.append('profilePicture', file);
 
-    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/profile/picture`, {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/profile/picture`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1346,7 +1356,12 @@ async function uploadProfilePicture(file) {
 
 async function deleteProfilePicture() {
     try {
-    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/profile/picture`, {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/profile/picture`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1412,7 +1427,12 @@ function handleResize() {
 // Security Settings Integration
 async function updatePassword(currentPassword, newPassword) {
     try {
-    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/profile/password`, {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/profile/password`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -1439,7 +1459,12 @@ async function updatePassword(currentPassword, newPassword) {
 
 async function updateSecurityPreferences(preferences) {
     try {
-    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/profile/security`, {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/profile/security`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -1464,7 +1489,12 @@ async function updateSecurityPreferences(preferences) {
 async function setup2FA() {
     try {
         // Request 2FA setup
-    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/profile/2fa/setup`, {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/profile/2fa/setup`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1585,7 +1615,12 @@ async function uploadVerificationDocuments(files) {
             formData.append('documents', file);
         });
 
-    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/profile/verification/documents`, {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/profile/verification/documents`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1606,7 +1641,12 @@ async function uploadVerificationDocuments(files) {
 
 async function checkVerificationStatus() {
     try {
-    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/profile/verification/status`, {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/profile/verification/status`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -2053,7 +2093,12 @@ function updateTransactionHistory(data) {
 
 async function getPayoutMethods() {
     try {
-    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/profile/payout-methods`, {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+    const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/profile/payout-methods`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -2293,9 +2338,14 @@ function setupPayoutForm() {
 // Fetch payout history
 async function fetchPayoutHistory() {
     try {
-        const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/api/payout/requests`, {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+        const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/payouts/requests`, {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${token}`
             }
         });
         if (!response.ok) {
@@ -4836,10 +4886,19 @@ async function loadBookingsForMonth(year, month) {
         const startDate = new Date(year, month, 1);
         const endDate = new Date(year, month + 1, 0);
         
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
         const response = await fetch(
-            `https://real-estate-backend-d9es.onrender.com/api/bookings/agent-bookings?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`
+            `${window.APP_CONFIG.API_BASE_URL}/bookings/agent-bookings?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }
         );
-        
         currentBookings = await response.json();
         markBookedDays();
         updateListView();
@@ -4953,11 +5012,16 @@ function createBookingActions(booking) {
 // Update booking status
 async function updateBookingStatus(bookingId, newStatus) {
     try {
-        const response = await fetch(`https://real-estate-backend-d9es.onrender.com/api/bookings/${bookingId}`, {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+        const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/bookings/${bookingId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({ status: newStatus })
         });
@@ -4975,7 +5039,16 @@ async function updateBookingStatus(bookingId, newStatus) {
 // Load user's properties for booking form
 async function loadMyProperties() {
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/listings/my-listings');
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+        const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/listings/my-listings`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
         const properties = await response.json();
         
         const select = document.querySelector('select[name="propertyId"]');
@@ -5007,11 +5080,16 @@ async function handleNewBooking(event) {
     }
     
     try {
-        const response = await fetch('https://real-estate-backend-d9es.onrender.com/api/bookings', {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+        const response = await fetch(`${window.APP_CONFIG.API_BASE_URL}/bookings`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
                 propertyId: formData.get('propertyId'),
