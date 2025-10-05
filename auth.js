@@ -166,7 +166,13 @@ class AuthService {
             const data = response.parsedData;
 
             if (!response.ok) {
-                throw new Error(data.message || data.error || 'Login failed');
+                throw new Error(data?.message || data?.error || 'Login failed');
+            }
+
+            // Ensure the login response contains a token
+            if (!data || !data.token) {
+                console.error('Login response missing token:', data);
+                throw new Error('Login failed: authentication token not received from server');
             }
 
             // Store the token and user data
@@ -198,6 +204,12 @@ class AuthService {
     // Set the authentication token
     setToken(token) {
         try {
+            if (!token) {
+                console.error('Attempted to save empty/falsy token to localStorage:', token);
+                // Ensure we don't store 'undefined' or 'null' strings
+                localStorage.removeItem(AUTH_TOKEN_KEY);
+                return;
+            }
             localStorage.setItem(AUTH_TOKEN_KEY, token);
             // Try to parse token expiry for debugging
             try {
