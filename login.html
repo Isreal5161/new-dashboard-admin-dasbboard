@@ -473,8 +473,9 @@
                             <label>Email or Username</label>
                             <div class="input-wrapper">
                                 <i class="fas fa-user input-icon"></i>
-                                <input type="text" class="form-control" placeholder="Enter your email or username" required>
+                                <input type="text" class="form-control" id="login-identifier" placeholder="Enter your email or username" required>
                             </div>
+                            <div id="login-error" class="error-message" style="display:none;"></div>
                         </div>
 
                         <div class="form-group">
@@ -491,6 +492,23 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-sign-in-alt"></i> Login to CribzConnect
                         </button>
+                                <style>
+                                @media (max-width: 600px) {
+                                    .login-container {
+                                        width: 98%;
+                                        max-width: 100%;
+                                        margin: 0 auto;
+                                        border-radius: 0;
+                                    }
+                                    .form-container {
+                                        padding: 1rem;
+                                    }
+                                    .form-control, .btn {
+                                        font-size: 1.15em;
+                                        padding: 14px;
+                                    }
+                                }
+                                </style>
 
                         <div class="divider">
                             <span>or continue with</span>

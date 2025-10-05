@@ -5,6 +5,12 @@
 function loadWalletPage() {
     // TODO: Implement wallet page logic
     console.log('loadWalletPage called (global placeholder)');
+// Validate username or email for login
+function isValidUsernameOrEmail(input) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const usernameRegex = /^[a-zA-Z0-9_]{3,}$/;
+    return emailRegex.test(input) || usernameRegex.test(input);
+}
 }
 
 // Global Configuration
@@ -97,6 +103,33 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeDashboard();
     updateUserProfile();
     setupSubmenuHandlers();
+
+    // Login validation logic
+    const loginInput = document.getElementById('login-identifier');
+    const errorDiv = document.getElementById('login-error');
+    if (loginInput && errorDiv) {
+        loginInput.addEventListener('blur', () => {
+            if (!isValidUsernameOrEmail(loginInput.value.trim())) {
+                errorDiv.textContent = 'Enter a valid email or username (min 3 chars, letters/numbers/underscores)';
+                errorDiv.style.display = 'block';
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        });
+    }
+    // On login form submit, validate before sending
+    const loginForm = document.getElementById('login-form');
+    if (loginForm && loginInput && errorDiv) {
+        loginForm.addEventListener('submit', function(e) {
+            if (!isValidUsernameOrEmail(loginInput.value.trim())) {
+                errorDiv.textContent = 'Enter a valid email or username (min 3 chars, letters/numbers/underscores)';
+                errorDiv.style.display = 'block';
+                e.preventDefault();
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        });
+    }
 });
 
 // Set up submenu click handlers

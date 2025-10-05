@@ -1,3 +1,19 @@
+/* Mobile-friendly login form styles */
+@media (max-width: 600px) {
+    .login-container {
+        width: 98%;
+        max-width: 100%;
+        margin: 0 auto;
+        border-radius: 0;
+    }
+    .form-container {
+        padding: 1rem;
+    }
+    .form-control, .btn {
+        font-size: 1.15em;
+        padding: 14px;
+    }
+}
 /* Reset and Base Styles */
 
 /* Wallet Styles */
