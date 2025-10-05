@@ -90,3 +90,18 @@ async function initializeDashboard() {
         }
     }
 }
+
+// Global auth unauthorized handler to centralize logout behavior
+window.addEventListener('auth:unauthorized', (e) => {
+    console.warn('Global auth:unauthorized event received', e.detail);
+    // Avoid double-redirect loops: only redirect if on a protected page
+    const currentHash = window.location.hash || '#dashboard';
+    // Show a friendly message and then redirect once
+    alert('Your session has expired or is invalid. You will be redirected to the login page.');
+    // Clear sensitive local data then redirect
+    localStorage.removeItem('token');
+    localStorage.removeItem('userData');
+    setTimeout(() => {
+        window.location.href = 'login.html';
+    }, 800);
+});

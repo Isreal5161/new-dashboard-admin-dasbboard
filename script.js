@@ -40,9 +40,13 @@ async function authorizedFetch(url, options = {}) {
         } catch (e) {
             console.warn('authorizedFetch 401 for', url, 'token:', token, 'and response body could not be read');
         }
-        // Remove token and redirect after a short delay so logs can be seen
-        localStorage.removeItem('token');
-        setTimeout(() => { window.location.href = 'login.html'; }, 500);
+        // Emit an auth event so the app can handle logout gracefully and avoid redirect loops
+        try {
+            window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: { url, token } }));
+        } catch (e) {
+            console.warn('Could not dispatch auth:unauthorized event', e);
+        }
+        // Do NOT remove token or immediately redirect here — let a central handler decide
         throw new Error('Unauthorized');
     }
     return res;
